@@ -1,0 +1,236 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  logoUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  users       User[]
+  projects    Project[]
+  
+  @@map("organizations")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  firstName      String
+  lastName       String
+  password       String
+  role           UserRole @default(USER)
+  isActive       Boolean  @default(true)
+  lastLoginAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  
+  projectsOwned     Project[] @relation("ProjectOwner")
+  projectMemberships ProjectMember[]
+  inspections       Inspection[]
+  ncrs              NCR[]
+  documentsUploaded ProjectDocument[]
+  
+  @@map("users")
+}
+
+model Project {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  status      ProjectStatus @default(PLANNING)
+  priority    ProjectPriority @default(MEDIUM)
+  progress    Int         @default(0)
+  budget      Decimal?
+  clientName  String?
+  clientContact String?
+  projectType String?
+  startDate   DateTime?
+  endDate     DateTime?
+  location    String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  
+  ownerId     String
+  owner       User @relation("ProjectOwner", fields: [ownerId], references: [id])
+  
+  members     ProjectMember[]
+  documents   ProjectDocument[]
+  inspections Inspection[]
+  ncrs        NCR[]
+  
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  role      ProjectRole @default(MEMBER)
+  joinedAt  DateTime @default(now())
+  
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([projectId, userId])
+  @@map("project_members")
+}
+
+model ProjectDocument {
+  id           String      @id @default(cuid())
+  name         String
+  filePath     String
+  fileSize     Int?
+  fileType     String?
+  documentType DocumentType @default(OTHER)
+  uploadedAt   DateTime    @default(now())
+  
+  projectId    String
+  project      Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  uploadedById String
+  uploadedBy   User @relation(fields: [uploadedById], references: [id])
+  
+  @@map("project_documents")
+}
+
+model Inspection {
+  id          String          @id @default(cuid())
+  title       String
+  description String?
+  status      InspectionStatus @default(PENDING)
+  scheduledAt DateTime?
+  completedAt DateTime?
+  location    String?
+  notes       String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  
+  projectId   String
+  project     Project @relation(fields: [projectId], references: [id])
+  
+  inspectorId String
+  inspector   User @relation(fields: [inspectorId], references: [id])
+  
+  photos      Photo[]
+  
+  @@map("inspections")
+}
+
+model NCR {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  severity    NCRSeverity @default(MEDIUM)
+  status      NCRStatus   @default(OPEN)
+  location    String?
+  correctiveAction String?
+  dueDate     DateTime?
+  closedAt    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  projectId   String
+  project     Project @relation(fields: [projectId], references: [id])
+  
+  reportedById String
+  reportedBy   User @relation(fields: [reportedById], references: [id])
+  
+  photos      Photo[]
+  
+  @@map("ncrs")
+}
+
+model Photo {
+  id          String   @id @default(cuid())
+  filename    String
+  originalName String
+  url         String
+  caption     String?
+  createdAt   DateTime @default(now())
+  
+  inspectionId String?
+  inspection   Inspection? @relation(fields: [inspectionId], references: [id])
+  
+  ncrId       String?
+  ncr         NCR? @relation(fields: [ncrId], references: [id])
+  
+  @@map("photos")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  MANAGER
+  USER
+  VIEWER
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum ProjectPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum ProjectRole {
+  MANAGER
+  SUPERVISOR
+  INSPECTOR
+  MEMBER
+}
+
+enum InspectionStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+enum NCRSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum NCRStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum DocumentType {
+  DRAWING
+  SPECIFICATION
+  CONTRACT
+  PHOTO
+  REPORT
+  PLAN
+  PERMIT
+  OTHER
+}
