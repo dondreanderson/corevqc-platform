@@ -1,240 +1,343 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getProfile, logout } from '../store/authSlice';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import toast from 'react-hot-toast';
-import '../styles/dashboard.css';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  Area,
+  AreaChart
+} from 'recharts';
 
-export const Dashboard: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const { user, isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
+// TypeScript interfaces
+interface OverviewData {
+  totalProjects: number;
+  activeProjects: number;
+  completedProjects: number;
+  totalBudget: number;
+  totalActualCost: number;
+  budgetVariance: number;
+  averageQualityScore: number;
+  averageProgress: number;
+  costEfficiency: number;
+}
+
+interface ProgressData {
+  name: string;
+  progress: number;
+  status: string;
+  id: string;
+}
+
+interface FinancialData {
+  name: string;
+  budget: number;
+  actualCost: number;
+  variance: number;
+  efficiency: number;
+}
+
+interface QualityData {
+  averageScore: number;
+  scoreDistribution: Array<{
+    name: string;
+    score: number;
+    status: string;
+  }>;
+  qualityTrends: Array<{
+    month: string;
+    score: number;
+  }>;
+}
+
+const Dashboard: React.FC = () => {
+  const [overview, setOverview] = useState<OverviewData | null>(null);
+  const [progressData, setProgressData] = useState<ProgressData[]>([]);
+  const [financialData, setFinancialData] = useState<FinancialData[]>([]);
+  const [qualityData, setQualityData] = useState<QualityData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
+    fetchDashboardData();
+  }, []);
 
-    if (!user) {
-      dispatch(getProfile());
-    }
-  }, [isAuthenticated, user, dispatch, navigate]);
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch all analytics data
+      const [overviewRes, progressRes, financialRes, qualityRes] = await Promise.all([
+        fetch('http://localhost:8000/api/analytics/overview'),
+        fetch('http://localhost:8000/api/analytics/progress'),
+        fetch('http://localhost:8000/api/analytics/financial'),
+        fetch('http://localhost:8000/api/analytics/quality')
+      ]);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    toast.success('👋 Logged out successfully');
-    navigate('/login');
+      if (!overviewRes.ok || !progressRes.ok || !financialRes.ok || !qualityRes.ok) {
+        throw new Error('Failed to fetch dashboard data');
+      }
+
+      const [overviewData, progressData, financialData, qualityData] = await Promise.all([
+        overviewRes.json(),
+        progressRes.json(),
+        financialRes.json(),
+        qualityRes.json()
+      ]);
+
+      setOverview(overviewData);
+      setProgressData(progressData);
+      setFinancialData(financialData);
+      setQualityData(qualityData);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      setError('Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (isLoading) {
+  // Chart colors
+  const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+
+  if (loading) {
     return (
-      <div className="loading-container">
-        <div className="spinner-large"></div>
-        <p>Loading your dashboard...</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
-  if (!user) {
+  if (error) {
     return (
-      <div className="loading-container">
-        <div className="spinner-large"></div>
-        <p>Loading user profile...</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Dashboard</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button 
+            onClick={fetchDashboardData}
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="dashboard">
-      {/* Navigation Header */}
-      <nav className="navbar">
-       <div className="nav-container">
-        <div className="nav-brand">
-      <span className="nav-logo">🏗️</span>
-      <h1 className="nav-title">COREVQC</h1>
-      <span className="nav-subtitle">Quality Control Platform</span>
-    </div>
-    
-    <div className="nav-menu">
-      <button 
-        className="nav-item"
-        onClick={() => navigate('/dashboard')}
-      >
-        🏠 Dashboard
-      </button>
-      <button 
-        className="nav-item"
-        onClick={() => navigate('/projects')}
-      >
-        📋 Projects
-      </button>
-      <button 
-        className="nav-item"
-        onClick={() => navigate('/projects/new')}
-      >
-        ➕ New Project
-      </button>
-    </div>
-    
-    <div className="nav-user">
-      <div className="user-info">
-        <span className="user-greeting">Welcome back,</span>
-        <span className="user-name">{user.firstName} {user.lastName}</span>
-        <span className="user-role">{user.role}</span>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">COREVQC Dashboard</h1>
+              <p className="text-gray-600">Construction Quality Control Analytics & Insights</p>
+            </div>
+            <div className="flex space-x-3">
+              <Link
+                to="/projects"
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                View All Projects
+              </Link>
+              <button className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                Export Report
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-      <button className="logout-btn" onClick={handleLogout}>
-        <span>🚪</span> Logout
-      </button>
-    </div>
-  </div>
-</nav>
 
-      {/* Main Content */}
-      <main className="main-content">
-        {/* Welcome Section */}
-        <section className="welcome-section">
-          <div className="welcome-card">
-            <div className="welcome-content">
-              <h2>🎉 Welcome to COREVQC Dashboard</h2>
-              <p>Manage your construction quality control processes with ease and efficiency.</p>
-              <div className="welcome-stats">
-                <span>✅ System Active</span>
-                <span>🔒 Secure Access</span>
-                <span>📊 Real-time Data</span>
-              </div>
-            </div>
-            <div className="welcome-icon">
-              <span>🏗️</span>
-            </div>
-          </div>
-        </section>
-
-        {/* User Profile Card */}
-        <section className="profile-section">
-          <div className="profile-card">
-            <h3>👤 Your Profile</h3>
-            <div className="profile-grid">
-              <div className="profile-item">
-                <label>Full Name</label>
-                <span className="profile-value">{user.firstName} {user.lastName}</span>
-              </div>
-              <div className="profile-item">
-                <label>Email Address</label>
-                <span className="profile-value">{user.email}</span>
-              </div>
-              <div className="profile-item">
-                <label>Role</label>
-                <span className="profile-value">
-                  <span className="role-badge">{user.role}</span>
-                </span>
-              </div>
-              <div className="profile-item">
-                <label>Organization</label>
-                <span className="profile-value">{user.organization.name}</span>
-              </div>
-              <div className="profile-item">
-                <label>Organization ID</label>
-                <span className="profile-value org-id">{user.organizationId}</span>
-              </div>
-              <div className="profile-item">
-                <label>Account Status</label>
-                <span className="profile-value">
-                  <span className="status-active">Active</span>
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Quick Stats */}
-        <section className="stats-section">
-          <h3>📊 Quick Statistics</h3>
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-icon">📋</div>
-              <div className="stat-content">
-                <h4>Projects</h4>
-                <p className="stat-number">0</p>
-                <span className="stat-label">Active projects</span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Overview Cards */}
+        {overview && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">Total Projects</dt>
+                    <dd className="text-2xl font-bold text-gray-900">{overview.totalProjects}</dd>
+                  </dl>
+                </div>
               </div>
             </div>
 
-            <div className="stat-card">
-              <div className="stat-icon">✅</div>
-              <div className="stat-content">
-                <h4>Inspections</h4>
-                <p className="stat-number">0</p>
-                <span className="stat-label">Completed this month</span>
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">Active Projects</dt>
+                    <dd className="text-2xl font-bold text-gray-900">{overview.activeProjects}</dd>
+                  </dl>
+                </div>
               </div>
             </div>
 
-            <div className="stat-card">
-              <div className="stat-icon">⚠️</div>
-              <div className="stat-content">
-                <h4>NCRs</h4>
-                <p className="stat-number">0</p>
-                <span className="stat-label">Non-conformance reports</span>
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">Total Budget</dt>
+                    <dd className="text-2xl font-bold text-gray-900">${(overview.totalBudget / 1000000).toFixed(1)}M</dd>
+                  </dl>
+                </div>
               </div>
             </div>
 
-            <div className="stat-card">
-              <div className="stat-icon">👥</div>
-              <div className="stat-content">
-                <h4>Team</h4>
-                <p className="stat-number">1</p>
-                <span className="stat-label">Organization members</span>
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">Avg Quality Score</dt>
+                    <dd className="text-2xl font-bold text-gray-900">{overview.averageQualityScore}/100</dd>
+                  </dl>
+                </div>
               </div>
             </div>
           </div>
-        </section>
+        )}
 
-        {/* Feature Preview */}
-        <section className="features-section">
-          <div className="features-card">
-            <h3>🚀 Coming Soon</h3>
-            <p>Exciting features are being developed to enhance your quality control experience:</p>
-            
-            <div className="features-grid">
-              <div className="feature-item">
-                <span className="feature-icon">📱</span>
-                <h4>Project Management</h4>
-                <p>Create and manage construction projects with team collaboration</p>
+        {/* Charts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Project Progress Chart */}
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Project Progress</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={progressData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="progress" fill="#3B82F6" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Financial Analysis Chart */}
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Budget vs Actual Cost</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={financialData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`} />
+                <Tooltip formatter={(value) => [`$${(Number(value) / 1000000).toFixed(1)}M`, '']} />
+                <Bar dataKey="budget" fill="#10B981" name="Budget" />
+                <Bar dataKey="actualCost" fill="#3B82F6" name="Actual Cost" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Quality and Performance Metrics */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Quality Score Distribution */}
+          {qualityData && (
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Quality Score Distribution</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={qualityData.scoreDistribution}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="score"
+                    label={({ name, score }) => `${name}: ${score}`}
+                  >
+                    {qualityData.scoreDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {/* Quality Trends */}
+          {qualityData && (
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Quality Score Trends</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={qualityData.qualityTrends}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis domain={[60, 100]} />
+                  <Tooltip />
+                  <Area type="monotone" dataKey="score" stroke="#8B5CF6" fill="#8B5CF6" fillOpacity={0.6} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+
+        {/* Summary Statistics */}
+        {overview && (
+          <div className="mt-8 bg-white p-6 rounded-lg shadow">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Summary</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-blue-600">{overview.averageProgress}%</div>
+                <div className="text-sm text-gray-500">Average Progress</div>
               </div>
-              
-              <div className="feature-item">
-                <span className="feature-icon">🔍</span>
-                <h4>AI-Powered Inspections</h4>
-                <p>Automated defect detection using computer vision technology</p>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-600">{overview.costEfficiency}%</div>
+                <div className="text-sm text-gray-500">Cost Efficiency</div>
               </div>
-              
-              <div className="feature-item">
-                <span className="feature-icon">📊</span>
-                <h4>Advanced Analytics</h4>
-                <p>Comprehensive reports and insights for quality metrics</p>
-              </div>
-              
-              <div className="feature-item">
-                <span className="feature-icon">🥽</span>
-                <h4>AR Integration</h4>
-                <p>Augmented reality for real-time model overlay and inspections</p>
-              </div>
-              
-              <div className="feature-item">
-                <span className="feature-icon">⛓️</span>
-                <h4>Blockchain Audit</h4>
-                <p>Immutable record keeping and smart contract automation</p>
-              </div>
-              
-              <div className="feature-item">
-                <span className="feature-icon">📱</span>
-                <h4>Mobile App</h4>
-                <p>On-site quality control with mobile device integration</p>
+              <div className="text-center">
+                <div className={`text-3xl font-bold ${overview.budgetVariance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  ${Math.abs(overview.budgetVariance / 1000000).toFixed(1)}M
+                </div>
+                <div className="text-sm text-gray-500">
+                  Budget {overview.budgetVariance >= 0 ? 'Surplus' : 'Overrun'}
+                </div>
               </div>
             </div>
           </div>
-        </section>
-      </main>
+        )}
+      </div>
     </div>
   );
 };

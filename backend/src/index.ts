@@ -3,7 +3,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import authRoutes from './routes/auth';
-import projectRoutes from './routes/projects';  // Add this import
+import projectRoutes from './routes/projects'; 
+import dashboardRoutes from './routes/dashboard';
+import analyticsRoutes from './routes/analytics';
 
 dotenv.config();
 
@@ -18,7 +20,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/projects', projectRoutes);  // Add this line
+app.use('/api/projects', projectRoutes); 
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 app.get('/api/health', async (req, res) => {
   try {
