@@ -6,8 +6,9 @@ import { store } from './store/store';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
-import { Projects } from './pages/Projects';  // Add this import
-import { NewProject } from './pages/NewProject';  // Add this import
+import { Projects } from './pages/Projects';  
+import { NewProject } from './pages/NewProject'; 
+import ProjectDetails from './pages/ProjectDetails';
 import './App.css';
 
 function App() {
@@ -56,6 +57,7 @@ function App() {
             <Route path="/projects" element={<Projects />} /> 
             <Route path="/projects/new" element={<NewProject />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/projects/:id" element={<ProjectDetails />} />
           </Routes>
         </div>
       </Router>
