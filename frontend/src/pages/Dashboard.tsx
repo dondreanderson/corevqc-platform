@@ -217,13 +217,7 @@ const Dashboard: React.FC = () => {
                     boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)'
                   }}
                 />
-                <Bar dataKey="progress" fill="url(#progressGradient)" radius={[4, 4, 0, 0]} />
-                <defs>
-                  <linearGradient id="progressGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3b82f6" />
-                    <stop offset="100%" stopColor="#1d4ed8" />
-                  </linearGradient>
-                </defs>
+                <Bar dataKey="progress" fill="#3B82F6" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -296,15 +290,10 @@ const Dashboard: React.FC = () => {
                       type="monotone" 
                       dataKey="score" 
                       stroke="#8b5cf6" 
-                      fill="url(#qualityGradient)"
+                      fill="#8b5cf6"
+                      fillOpacity={0.6}
                       strokeWidth={3}
                     />
-                    <defs>
-                      <linearGradient id="qualityGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.8} />
-                        <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.1} />
-                      </linearGradient>
-                    </defs>
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -323,4 +312,22 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="summary-item">
                 <div className="summary-number" style={{color: '#10b981'}}>{overview.costEfficiency}%</div>
-                <div
+                <div className="summary-label">Cost Efficiency</div>
+              </div>
+              <div className="summary-item">
+                <div className={`summary-number ${overview.budgetVariance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  ${Math.abs(overview.budgetVariance / 1000000).toFixed(1)}M
+                </div>
+                <div className="summary-label">
+                  Budget {overview.budgetVariance >= 0 ? 'Surplus' : 'Overrun'}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
