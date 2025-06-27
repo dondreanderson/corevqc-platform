@@ -1,5 +1,5 @@
 // src/components/QualityControlDashboard.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   ExclamationTriangleIcon, 
   CheckCircleIcon, 
@@ -11,8 +11,8 @@ import {
   CalendarIcon,
   UserIcon,
   DocumentTextIcon,
-  MagnifyingGlassIcon,
-  FunnelIcon
+  MagnifyingGlassIcon
+  
 } from '@heroicons/react/24/outline';
 
 // TypeScript Interfaces

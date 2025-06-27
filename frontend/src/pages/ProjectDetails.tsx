@@ -1,22 +1,9 @@
+// src/pages/ProjectDetails.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ProjectOverview } from '../components/ProjectOverview';
-import type { EnhancedProject, ProjectStatus, ProjectPriority } from '../types/project';
-
-// Existing COREVQC Project type (basic structure)
-interface Project {
-  id: string;
-  name: string;
-  description?: string;
-  status?: string;
-  created_at?: string;
-  updated_at?: string;
-  owner_id?: string;
-  team_members?: string[];
-  budget?: number;
-  deadline?: string;
-  progress?: number;
-}
+import QualityControlDashboard from '../components/QualityControlDashboard';
+import type { Project, EnhancedProject, ProjectStatus, ProjectPriority } from '../types/project';
 
 // API Response type
 interface ProjectResponse {
@@ -84,14 +71,14 @@ const transformToEnhancedProject = (project: Project): EnhancedProject => {
     priority: determinePriority(project),
     completion: calculateCompletion(project),
     startDate: project.created_at || new Date().toISOString(),
-    endDate: project.deadline || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // Default 90 days
+    endDate: project.deadline || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
     budget: project.budget || 0,
-    spent: Math.floor((project.budget || 0) * (calculateCompletion(project) / 100)), // Estimate spent based on completion
+    spent: Math.floor((project.budget || 0) * (calculateCompletion(project) / 100)),
     teamSize: project.team_members?.length || 1,
     owner: project.owner_id || 'Unknown',
-    tags: [], // Default empty tags
-    milestones: [], // Default empty milestones
-    risks: [], // Default empty risks
+    tags: [],
+    milestones: [],
+    risks: [],
     lastUpdated: project.updated_at || new Date().toISOString()
   };
 };
@@ -100,13 +87,14 @@ export const ProjectDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'overview' | 'quality'>('overview');
+
   // State management
   const [project, setProject] = useState<Project | null>(null);
   const [enhancedProject, setEnhancedProject] = useState<EnhancedProject | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [formData, setFormData] = useState<Partial<Project>>({});
 
   // Fetch project data
   const fetchProject = async () => {
@@ -124,8 +112,6 @@ export const ProjectDetails: React.FC = () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          // Add authentication headers if needed
-          // 'Authorization': `Bearer ${token}`,
         },
       });
 
@@ -141,7 +127,6 @@ export const ProjectDetails: React.FC = () => {
 
       setProject(result.data);
       setEnhancedProject(transformToEnhancedProject(result.data));
-      setFormData(result.data);
 
     } catch (err) {
       console.error('Error fetching project:', err);
@@ -151,84 +136,14 @@ export const ProjectDetails: React.FC = () => {
     }
   };
 
-  // Update project
-  const updateProject = async (updatedData: Partial<Project>) => {
-    if (!id || !project) return;
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await fetch(`http://localhost:8000/api/projects/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          // Add authentication headers if needed
-          // 'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(updatedData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result: ProjectResponse = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.message || 'Failed to update project');
-      }
-
-      setProject(result.data);
-      setEnhancedProject(transformToEnhancedProject(result.data));
-      setFormData(result.data);
-      setIsEditing(false);
-
-    } catch (err) {
-      console.error('Error updating project:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update project');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await updateProject(formData);
-  };
-
-  // Handle form input changes
-  const handleInputChange = (field: keyof Project, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
   // Handle project actions from ProjectOverview
   const handleProjectAction = async (action: string, data?: any) => {
     switch (action) {
       case 'edit':
-        setIsEditing(true);
+        console.log('Edit project', data);
         break;
       case 'save':
-        if (data) {
-          // Transform enhanced project data back to basic project format
-          const basicProjectData: Partial<Project> = {
-            name: data.title,
-            description: data.description,
-            status: data.status,
-            budget: data.budget,
-            deadline: data.endDate,
-            progress: data.completion
-          };
-          await updateProject(basicProjectData);
-        }
-        break;
-      case 'cancel':
-        setIsEditing(false);
-        setFormData(project || {});
+        console.log('Save project', data);
         break;
       case 'delete':
         if (window.confirm('Are you sure you want to delete this project?')) {
@@ -350,98 +265,48 @@ export const ProjectDetails: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Tab Navigation */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'overview'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Project Overview
+            </button>
+            <button
+              onClick={() => setActiveTab('quality')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'quality'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Quality Control
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      {/* Tab Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Legacy Form (Hidden when using ProjectOverview) */}
-        {isEditing && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 className="text-xl font-semibold mb-4">Edit Project</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Project Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.name || ''}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
-                <textarea
-                  value={formData.description || ''}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Status
-                  </label>
-                  <select
-                    value={formData.status || ''}
-                    onChange={(e) => handleInputChange('status', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="planning">Planning</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="on_hold">On Hold</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Budget
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.budget || ''}
-                    onChange={(e) => handleInputChange('budget', parseFloat(e.target.value) || 0)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={() => handleProjectAction('cancel')}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 transition-colors"
-                >
-                  {loading ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </form>
-          </div>
+        {activeTab === 'overview' && enhancedProject && (
+          <ProjectOverview
+            project={enhancedProject}
+            onAction={handleProjectAction}
+            isEditable={true}
+            showActions={true}
+          />
         )}
 
-        {/* Enhanced Project Overview */}
-        <ProjectOverview
-          project={enhancedProject}
-          onAction={handleProjectAction}
-          isEditable={true}
-          showActions={true}
-        />
+        {activeTab === 'quality' && (
+          <QualityControlDashboard projectId={id || ''} />
+        )}
       </div>
     </div>
   );
