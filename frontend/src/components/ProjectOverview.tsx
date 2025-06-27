@@ -1,189 +1,177 @@
-// Base Project Interface
-export interface Project {
-  id: string;
-  name: string;
-  description: string;
-  status: string;
-  progress: number;
-  startDate: string;
-  endDate: string;
-  budget?: number;
-  location?: string;
-  client?: string;
-  createdAt?: string;
-  updatedAt?: string;
+// src/components/ProjectOverview.tsx
+import React from 'react';
+import type { EnhancedProject } from '../types/project';
+
+interface ProjectOverviewProps {
+  project: EnhancedProject;
+  onAction?: (action: string, data?: any) => void;
+  isEditable?: boolean;
+  showActions?: boolean;
 }
 
-// Enhanced Project Interface for UI Components
-export interface EnhancedProject {
-  id: string;
-  title: string;
-  description: string;
-  status: ProjectStatus;
-  priority: ProjectPriority;
-  completion: number;
-  startDate: string;
-  endDate: string;
-  budget: number;
-  spent: number;
-  teamSize: number;
-  owner: string;
-  tags: string[];
-  milestones: Milestone[];
-  risks: Risk[];
-  lastUpdated: string;
-}
+export const ProjectOverview: React.FC = ({
+  project,
+  onAction,
+  isEditable = false,
+  showActions = true
+}) => {
+  const handleEdit = () => {
+    if (onAction) {
+      onAction('edit');
+    }
+  };
 
-// Project Status Type
-export type ProjectStatus = 
-  | 'planning' 
-  | 'in-progress' 
-  | 'on-hold' 
-  | 'completed' 
-  | 'cancelled';
+  const handleSave = () => {
+    if (onAction) {
+      onAction('save', project);
+    }
+  };
 
-// Project Priority Type
-export type ProjectPriority = 
-  | 'low' 
-  | 'medium' 
-  | 'high' 
-  | 'critical';
+  const handleDelete = () => {
+    if (onAction) {
+      onAction('delete');
+    }
+  };
 
-// Team Member Interface
-export interface TeamMember {
-  id: string;
-  name: string;
-  role: string;
-  email: string;
-  phone?: string;
-  department?: string;
-  company?: string;
-  avatar?: string;
-  status?: 'active' | 'inactive' | 'pending';
-}
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'in-progress':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'on-hold':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
 
-// Quality Report Interface
-export interface QualityReport {
-  id: string;
-  type: string;
-  title: string;
-  status: string;
-  createdAt: string;
-}
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'low':
+        return 'bg-green-100 text-green-800 border-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
 
-// Milestone Interface
-export interface Milestone {
-  id: string;
-  name: string;
-  description?: string;
-  targetDate: string;
-  actualDate?: string;
-  status: 'not-started' | 'in-progress' | 'completed' | 'delayed';
-  progress: number;
-  assignedTo?: TeamMember[];
-}
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
 
-// Risk Interface
-export interface Risk {
-  id: string;
-  title: string;
-  description: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  probability: number;
-  impact: number;
-  status: 'open' | 'mitigated' | 'closed';
-  mitigationPlan?: string;
-  assignedTo?: TeamMember;
-}
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  };
 
-// Inspection Result Interface
-export interface InspectionResult {
-  id: string;
-  parameter: string;
-  expectedValue: string;
-  actualValue: string;
-  result: 'pass' | 'fail' | 'warning';
-  notes?: string;
-  inspector: TeamMember;
-  timestamp: string;
-}
+  return (
+    
+      {/* Header */}
+      
+        
+          {project.title}
+          {project.description}
+        
+        
+        {showActions && (
+          
+            
+              Edit
+            
+            
+              Save
+            
+            
+              Delete
+            
+          
+        )}
+      
 
-// Document Interface
-export interface Document {
-  id: string;
-  name: string;
-  fileName: string;
-  type: DocumentType;
-  category: DocumentCategory;
-  size: number;
-  url: string;
-  thumbnailUrl?: string;
-  version: string;
-  uploadedBy: TeamMember;
-  uploadedDate: string;
-  lastModified: string;
-  tags?: string[];
-}
+      {/* Status and Priority */}
+      
+        
+          {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+        
+        
+          {project.priority.charAt(0).toUpperCase() + project.priority.slice(1)} Priority
+        
+      
 
-// Document Types
-export type DocumentType = 
-  | 'drawing' 
-  | 'specification' 
-  | 'report' 
-  | 'image' 
-  | 'video' 
-  | 'certificate' 
-  | 'contract';
+      {/* Progress Bar */}
+      
+        
+          Progress
+          {project.completion}%
+        
+        
+          
+        
+      
 
-export type DocumentCategory = 
-  | 'architectural' 
-  | 'structural' 
-  | 'mechanical' 
-  | 'electrical' 
-  | 'quality' 
-  | 'safety' 
-  | 'legal' 
-  | 'financial';
+      {/* Project Details Grid */}
+      
+        {/* Dates */}
+        
+          Timeline
+          
+            Start: {formatDate(project.startDate)}
+            End: {formatDate(project.endDate)}
+          
+        
 
-// Comment Interface
-export interface Comment {
-  id: string;
-  text: string;
-  author: TeamMember;
-  timestamp: string;
-  attachments?: string[];
-}
+        {/* Budget */}
+        
+          Budget
+          
+            Total: {formatCurrency(project.budget)}
+            Spent: {formatCurrency(project.spent)}
+            Remaining: {formatCurrency(project.budget - project.spent)}
+          
+        
 
-// API Response Types
-export interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-  error?: string;
-}
+        {/* Team */}
+        
+          Team
+          
+            Team Size: {project.teamSize} members
+            Owner: {project.owner}
+          
+        
+      
 
-export interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
+      {/* Tags */}
+      {project.tags && project.tags.length > 0 && (
+        
+          Tags
+          
+            {project.tags.map((tag, index) => (
+              
+                {tag}
+              
+            ))}
+          
+        
+      )}
 
-// Form State Types
-export interface FormState {
-  isSubmitting: boolean;
-  errors: Record<string, string>;
-  touched: Record<string, boolean>;
-}
+      {/* Last Updated */}
+      
+        Last updated: {formatDate(project.lastUpdated)}
+      
+    
+  );
+};
 
-// Filter State Types
-export interface FilterState {
-  search: string;
-  status: ProjectStatus | 'all';
-  priority: ProjectPriority | 'all';
-  dateRange: {
-    start: string;
-    end: string;
-  } | null;
-}
+export default ProjectOverview;
