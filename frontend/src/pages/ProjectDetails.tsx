@@ -1,86 +1,10 @@
-import React, { useState } from 'react';
+
+// src/pages/ProjectDetails.tsx
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ProjectOverview from '../components/ProjectOverview';
 import QualityControlDashboard from '../components/QualityControlDashboard';
-import type { Project, EnhancedProject, ProjectStatus, ProjectPriority } from '../types/project';
-
-// API Response type
-interface ProjectResponse {
-  success: boolean;
-  data: Project;
-  message?: string;
-}
-
-// Transform basic Project to EnhancedProject
-const transformToEnhancedProject = (project: Project): EnhancedProject => {
-  // Map status string to ProjectStatus enum
-  const mapStatus = (status?: string): ProjectStatus => {
-    switch (status?.toLowerCase()) {
-      case 'active':
-      case 'in_progress':
-      case 'in-progress':
-        return 'in-progress';
-      case 'completed':
-      case 'done':
-        return 'completed';
-      case 'on_hold':
-      case 'on-hold':
-      case 'paused':
-        return 'on-hold';
-      case 'cancelled':
-      case 'canceled':
-        return 'cancelled';
-      default:
-        return 'planning';
-    }
-  };
-
-  // Determine priority based on endDate and other factors
-  const determinePriority = (project: Project): ProjectPriority => {
-    if (project.endDate) {
-      const deadline = new Date(project.endDate);
-      const now = new Date();
-      const daysUntilDeadline = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-
-      if (daysUntilDeadline <= 7) return 'high';
-      if (daysUntilDeadline <= 30) return 'medium';
-    }
-    return 'low';
-  };
-
-  // Calculate completion percentage
-  const calculateCompletion = (project: Project): number => {
-    if (project.progress !== undefined) return Math.max(0, Math.min(100, project.progress));
-
-    const status = mapStatus(project.status);
-    switch (status) {
-      case 'completed': return 100;
-      case 'in-progress': return 50;
-      case 'on-hold': return 25;
-      case 'cancelled': return 0;
-      default: return 10;
-    }
-  };
-
-  return {
-    id: project.id,
-    title: project.name,
-    description: project.description || 'No description provided',
-    status: mapStatus(project.status),
-    priority: determinePriority(project),
-    completion: calculateCompletion(project),
-    startDate: project.startDate || project.createdAt || new Date().toISOString(),
-    endDate: project.endDate || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
-    budget: project.budget || 0,
-    spent: Math.floor((project.budget || 0) * (calculateCompletion(project) / 100)),
-    teamSize: 1, // Default team size
-    owner: 'Project Owner', // Default owner
-    tags: [],
-    milestones: [],
-    risks: [],
-    lastUpdated: project.updatedAt || new Date().toISOString()
-  };
-};
+import type { Project, EnhancedProject } from '../types/project';
 
 export const ProjectDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -88,35 +12,78 @@ export const ProjectDetails: React.FC = () => {
 
   // State management
   const [activeTab, setActiveTab] = useState<'overview' | 'quality'>('overview');
-  const [project, setProject] = useState(null);
-  const [enhancedProject, setEnhancedProject] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [project, setProject] = useState<Project | null>(null);
+  const [enhancedProject, setEnhancedProject] = useState<EnhancedProject | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock project data for demo purposes
-  React.useEffect(() => {
-    if (id) {
-      // Simulate API call with mock data
-      const mockProject: Project = {
-        id: id,
-        name: `Project ${id}`,
-        description: 'This is a sample project for demonstration',
-        status: 'in_progress',
-        progress: 65,
-        startDate: '2024-01-01',
-        endDate: '2024-06-30',
-        budget: 250000,
-        location: 'Downtown Construction Site',
-        client: 'ABC Corporation',
-        createdAt: '2024-01-01T00:00:00.000Z',
-        updatedAt: new Date().toISOString()
-      };
+  // Transform basic Project to EnhancedProject
+  const transformToEnhancedProject = (project: Project): EnhancedProject => {
+    const mapStatus = (status?: string) => {
+      switch (status?.toLowerCase()) {
+        case 'active':
+        case 'in_progress':
+        case 'in-progress':
+          return 'in-progress';
+        case 'completed':
+        case 'done':
+          return 'completed';
+        case 'on_hold':
+        case 'on-hold':
+        case 'paused':
+          return 'on-hold';
+        case 'cancelled':
+        case 'canceled':
+          return 'cancelled';
+        default:
+          return 'planning';
+      }
+    };
 
-      setProject(mockProject);
-      setEnhancedProject(transformToEnhancedProject(mockProject));
-      setLoading(false);
-    }
-  }, [id]);
+    const determinePriority = (project: Project) => {
+      if (project.endDate) {
+        const endDate = new Date(project.endDate);
+        const now = new Date();
+        const daysUntilDeadline = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+        if (daysUntilDeadline <= 7) return 'high';
+        if (daysUntilDeadline <= 30) return 'medium';
+      }
+      return 'low';
+    };
+
+    const calculateCompletion = (project: Project): number => {
+      if (project.progress !== undefined) return Math.max(0, Math.min(100, project.progress));
+
+      const status = mapStatus(project.status);
+      switch (status) {
+        case 'completed': return 100;
+        case 'in-progress': return 50;
+        case 'on-hold': return 25;
+        case 'cancelled': return 0;
+        default: return 10;
+      }
+    };
+
+    return {
+      id: project.id,
+      title: project.name,
+      description: project.description || 'No description provided',
+      status: mapStatus(project.status),
+      priority: determinePriority(project),
+      completion: calculateCompletion(project),
+      startDate: project.startDate || new Date().toISOString(),
+      endDate: project.endDate || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+      budget: project.budget || 0,
+      spent: Math.floor((project.budget || 0) * (calculateCompletion(project) / 100)),
+      teamSize: 5, // Default team size
+      owner: 'Project Manager',
+      tags: [],
+      milestones: [],
+      risks: [],
+      lastUpdated: project.updatedAt || new Date().toISOString()
+    };
+  };
 
   // Handle project actions from ProjectOverview
   const handleProjectAction = async (action: string, data?: any) => {
@@ -133,99 +100,134 @@ export const ProjectDetails: React.FC = () => {
         }
         break;
       case 'refresh':
-        console.log('Refresh project');
+        // Refresh project data
         break;
       default:
         console.log(`Unhandled action: ${action}`, data);
     }
   };
 
+  // Load project data (mock for now)
+  useEffect(() => {
+    if (!id) {
+      setError('Project ID is required');
+      setLoading(false);
+      return;
+    }
+
+    // Simulate API call with mock data
+    setTimeout(() => {
+      const mockProject: Project = {
+        id: id,
+        name: 'Downtown Office Complex',
+        description: 'A modern 15-story office building with sustainable design features and smart building technology.',
+        status: 'in_progress',
+        progress: 65,
+        startDate: '2024-01-15',
+        endDate: '2024-12-30',
+        budget: 2500000,
+        location: 'Downtown Financial District',
+        client: 'Metro Development Corp',
+        createdAt: '2024-01-15',
+        updatedAt: new Date().toISOString()
+      };
+
+      setProject(mockProject);
+      setEnhancedProject(transformToEnhancedProject(mockProject));
+      setLoading(false);
+    }, 1000);
+  }, [id]);
+
   // Loading state
   if (loading) {
     return (
-      
-        
-        Loading project details...
-      
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+        <span className="ml-4 text-lg">Loading project details...</span>
+      </div>
     );
   }
 
   // Error state
   if (error) {
     return (
-      
-        
-          
-            
-              
-                
-              
-            
-            
-              Error Loading Project
-              {error}
-            
-          
-          
-             navigate('/projects')}
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md w-full">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">Error Loading Project</h3>
+              <p className="mt-1 text-sm text-red-700">{error}</p>
+            </div>
+          </div>
+          <div className="mt-4">
+            <button
+              onClick={() => navigate('/projects')}
               className="bg-red-100 hover:bg-red-200 text-red-800 px-4 py-2 rounded-md text-sm font-medium transition-colors"
             >
               Back to Projects
-            
-          
-        
-      
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
   // No project found
   if (!project || !enhancedProject) {
     return (
-      
-        
-          Project Not Found
-          The requested project could not be found.
-           navigate('/projects')}
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Project Not Found</h2>
+          <p className="text-gray-600 mb-6">The requested project could not be found.</p>
+          <button
+            onClick={() => navigate('/projects')}
             className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md font-medium transition-colors"
           >
             Back to Projects
-          
-        
-      
+          </button>
+        </div>
+      </div>
     );
   }
 
   // Main render
   return (
-    
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      
-        
-          
-            
-               navigate('/projects')}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center">
+              <button
+                onClick={() => navigate('/projects')}
                 className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
               >
-                
-                  
-                
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
                 Back to Projects
-              
-            
-            
-              
+              </button>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-500">
                 Last updated: {new Date(enhancedProject.lastUpdated).toLocaleDateString()}
-              
-            
-          
-        
-      
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Tab Navigation */}
-      
-        
-          
-             setActiveTab('overview')}
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex space-x-8">
+            <button
+              onClick={() => setActiveTab('overview')}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'overview'
                   ? 'border-blue-500 text-blue-600'
@@ -233,8 +235,9 @@ export const ProjectDetails: React.FC = () => {
               } transition-colors`}
             >
               Project Overview
-            
-             setActiveTab('quality')}
+            </button>
+            <button
+              onClick={() => setActiveTab('quality')}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'quality'
                   ? 'border-blue-500 text-blue-600'
@@ -242,23 +245,29 @@ export const ProjectDetails: React.FC = () => {
               } transition-colors`}
             >
               Quality Control
-            
-          
-        
-      
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Tab Content */}
-      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'overview' && enhancedProject && (
-          
+          <ProjectOverview
+            project={enhancedProject}
+            onAction={handleProjectAction}
+            isEditable={true}
+            showActions={true}
+          />
         )}
 
         {activeTab === 'quality' && (
-          
+          <QualityControlDashboard projectId={id || ''} />
         )}
-      
-    
+      </div>
+    </div>
   );
 };
 
 export default ProjectDetails;
+            
