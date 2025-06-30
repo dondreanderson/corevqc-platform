@@ -5,7 +5,6 @@ builder = "NIXPACKS"
 startCommand = "npm start"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 300
-nixpacksConfigPath = "nixpacks.toml"
 
 [env]
 NODE_ENV = "production"

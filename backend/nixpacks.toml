@@ -2,7 +2,7 @@
 cmd = "npm install --legacy-peer-deps"
 
 [phases.build]
-cmd = "npm run build"
+cmd = "echo 'Skipping build - using ts-node'"
 
 [start]
 cmd = "npm start"
