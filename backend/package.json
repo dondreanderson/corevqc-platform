@@ -4,28 +4,12 @@
   "description": "COREVQC Backend API Server",
   "main": "dist/index.js",
   "scripts": {
-    "seed": "npx ts-node prisma/seed.ts",
-    "dev": "nodemon src/index.ts",
-    "build": "npx tsc",
     "start": "npx ts-node src/index.ts",
-    "test": "jest",
-    "railway:build": "npm run build",
-    "railway:start": "npm run start",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix",
-    "db:migrate": "npx prisma migrate deploy",
-    "db:seed": "npx prisma db seed",
-    "db:generate": "npx prisma generate",
+    "build": "npx tsc",
+    "dev": "nodemon src/index.ts",
     "postinstall": "npx prisma generate",
-    "prebuild": "npx prisma generate",
-    "db:studio": "npx prisma studio"
+    "db:migrate": "npx prisma migrate deploy"
   },
-  "prisma": {
-    "seed": "npx ts-node prisma/seed.ts"
-  },
-  
   "dependencies": {
     "@prisma/client": "^6.10.0",
     "aws-sdk": "^2.1504.0",
@@ -72,7 +56,7 @@
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.2",
-    "typescript": "^4.9.5"
+    "typescript": "^5.1.6"
   },
   "engines": {
     "node": ">=18.0.0"
