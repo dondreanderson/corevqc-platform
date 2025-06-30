@@ -3,77 +3,119 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import authRoutes from './routes/auth';
-import projectRoutes from './routes/projects';
+import projectRoutes from './routes/projects'; 
+import dashboardRoutes from './routes/dashboard';
+import analyticsRoutes from './routes/analytics';
 import qualityRoutes from './routes/quality';
 
-// Load environment variables
 dotenv.config();
 
 const app = express();
+// Railway provides PORT environment variable
 const PORT = process.env.PORT || 8000;
 const prisma = new PrismaClient();
 
-// Production CORS configuration
-const corsOptions = {
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-  credentials: true,
-  optionsSuccessStatus: 200
-};
-
 // Middleware
-app.use(cors(corsOptions));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Security headers
-app.use((req, res, next) => {
-  res.header('X-Content-Type-Options', 'nosniff');
-  res.header('X-Frame-Options', 'DENY');
-  res.header('X-XSS-Protection', '1; mode=block');
-  next();
-});
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/projects', projectRoutes); 
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/quality-control', qualityRoutes);
 
-// Health check for Railway
-app.get('/health', async (req, res) => {
+app.get('/api/health', async (req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
+    
     res.json({ 
       status: 'OK', 
+      message: 'COREVQC Backend is running!',
+      database: 'Connected',
       timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development'
+      version: '1.0.0',
+      port: PORT
     });
   } catch (error) {
+    console.error('Health check failed:', error);
     res.status(500).json({
       status: 'ERROR',
-      message: 'Database connection failed'
+      message: 'Database connection failed',
+      error: error.message
     });
   }
 });
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/quality-control', qualityRoutes);
-
-// Error handling middleware
-app.use((err: any, req: any, res: any, next: any) => {
-  console.error(err.stack);
-  res.status(500).json({
-    message: process.env.NODE_ENV === 'production' 
-      ? 'Internal server error' 
-      : err.message
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'COREVQC API is running',
+    status: 'OK',
+    timestamp: new Date().toISOString()
   });
 });
 
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, shutting down gracefully');
+app.get('/api', (req, res) => {
+  res.json({ 
+    message: 'Welcome to COREVQC API',
+    endpoints: [
+      'GET /api/health - Health check',
+      'GET /api/stats - Database statistics', 
+      'POST /api/auth/register - User registration',
+      'POST /api/auth/login - User login',
+      'GET /api/auth/profile - Get user profile',
+      'GET /api/projects - Get all projects',
+      'GET /api/quality-control/projects/:id/ncrs - Get NCRs',
+      'GET /api/quality-control/projects/:id/itps - Get ITPs'
+    ],
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Catch all route
+app.use('*', (req, res) => {
+  res.status(404).json({ 
+    error: 'Not Found',
+    message: `Route ${req.originalUrl} not found`,
+    availableRoutes: ['/api', '/api/health', '/api/stats', '/api/auth/*', '/api/projects/*']
+  });
+});
+
+// Error handling
+process.on('SIGINT', async () => {
+  console.log('\n🛑 Shutting down gracefully...');
   await prisma.$disconnect();
   process.exit(0);
 });
 
-app.listen(PORT, () => {
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+app.listen(PORT, '0.0.0.0', async () => {
   console.log(`🚀 COREVQC Backend Server Started`);
-  console.log(`📡 Server running on port: ${PORT}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`📡 Server running on: http://0.0.0.0:${PORT}`);
+  console.log(`💚 Health check: http://0.0.0.0:${PORT}/api/health`);
+  console.log(`🕒 Started at: ${new Date().toLocaleString()}`);
+  
+  try {
+    await prisma.$connect();
+    console.log('✅ Database connected successfully');
+    
+    const organizationCount = await prisma.organization.count();
+    const userCount = await prisma.user.count();
+    const projectCount = await prisma.project.count();
+    
+    console.log(`📊 Database Stats: ${organizationCount} organizations, ${userCount} users, ${projectCount} projects`);
+  } catch (error) {
+    console.error('❌ Database connection failed:', error);
+  }
 });
