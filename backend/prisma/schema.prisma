@@ -1,3 +1,6 @@
+// Enhanced Prisma Schema for COREVQC Platform
+// Includes ITP model and improved relationships
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -39,6 +42,7 @@ model User {
   projectsOwned     Project[] @relation("ProjectOwner")
   projectMemberships ProjectMember[]
   inspections       Inspection[]
+  itps              ITP[]
   ncrs              NCR[]
   documentsUploaded ProjectDocument[]
   
@@ -71,11 +75,132 @@ model Project {
   members     ProjectMember[]
   documents   ProjectDocument[]
   inspections Inspection[]
+  itps        ITP[]
   ncrs        NCR[]
   
   @@map("projects")
 }
 
+// NEW: Inspection and Test Plan Model
+model ITP {
+  id          String          @id @default(cuid())
+  itpNumber   String          @unique
+  title       String
+  description String?
+  phase       String
+  activity    String
+  status      ITPStatus       @default(PENDING)
+  inspectionType InspectionType @default(VISUAL)
+  scheduledAt DateTime?
+  completedAt DateTime?
+  location    String?
+  notes       String?
+  requirements String[]       @default([])
+  holdPoints  String[]        @default([])
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  
+  projectId   String
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  inspectorId String
+  inspector   User @relation(fields: [inspectorId], references: [id])
+  
+  checkpoints ITPCheckpoint[]
+  photos      Photo[]
+  
+  @@map("itps")
+}
+
+// NEW: ITP Checkpoint Model
+model ITPCheckpoint {
+  id          String   @id @default(cuid())
+  description String
+  status      CheckpointStatus @default(PENDING)
+  checkedBy   String?
+  checkedAt   DateTime?
+  notes       String?
+  order       Int     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  itpId       String
+  itp         ITP @relation(fields: [itpId], references: [id], onDelete: Cascade)
+  
+  @@map("itp_checkpoints")
+}
+
+model NCR {
+  id          String    @id @default(cuid())
+  ncrNumber   String    @unique
+  title       String
+  description String
+  severity    NCRSeverity @default(MEDIUM)
+  status      NCRStatus   @default(OPEN)
+  category    String
+  location    String?
+  correctiveAction String?
+  rootCause   String?
+  dueDate     DateTime?
+  closedAt    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  projectId   String
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  reportedById String
+  reportedBy   User @relation(fields: [reportedById], references: [id])
+  
+  photos      Photo[]
+  
+  @@map("ncrs")
+}
+
+model Inspection {
+  id          String          @id @default(cuid())
+  title       String
+  description String?
+  status      InspectionStatus @default(PENDING)
+  scheduledAt DateTime?
+  completedAt DateTime?
+  location    String?
+  notes       String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  
+  projectId   String
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  inspectorId String
+  inspector   User @relation(fields: [inspectorId], references: [id])
+  
+  photos      Photo[]
+  
+  @@map("inspections")
+}
+
+model Photo {
+  id          String   @id @default(cuid())
+  filename    String
+  originalName String
+  url         String
+  caption     String?
+  createdAt   DateTime @default(now())
+  
+  inspectionId String?
+  inspection   Inspection? @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  
+  ncrId       String?
+  ncr         NCR? @relation(fields: [ncrId], references: [id], onDelete: Cascade)
+  
+  itpId       String?
+  itp         ITP? @relation(fields: [itpId], references: [id], onDelete: Cascade)
+  
+  @@map("photos")
+}
+
+// Existing models continue...
 model ProjectMember {
   id        String   @id @default(cuid())
   role      ProjectRole @default(MEMBER)
@@ -109,70 +234,6 @@ model ProjectDocument {
   @@map("project_documents")
 }
 
-model Inspection {
-  id          String          @id @default(cuid())
-  title       String
-  description String?
-  status      InspectionStatus @default(PENDING)
-  scheduledAt DateTime?
-  completedAt DateTime?
-  location    String?
-  notes       String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  
-  projectId   String
-  project     Project @relation(fields: [projectId], references: [id])
-  
-  inspectorId String
-  inspector   User @relation(fields: [inspectorId], references: [id])
-  
-  photos      Photo[]
-  
-  @@map("inspections")
-}
-
-model NCR {
-  id          String    @id @default(cuid())
-  title       String
-  description String
-  severity    NCRSeverity @default(MEDIUM)
-  status      NCRStatus   @default(OPEN)
-  location    String?
-  correctiveAction String?
-  dueDate     DateTime?
-  closedAt    DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  projectId   String
-  project     Project @relation(fields: [projectId], references: [id])
-  
-  reportedById String
-  reportedBy   User @relation(fields: [reportedById], references: [id])
-  
-  photos      Photo[]
-  
-  @@map("ncrs")
-}
-
-model Photo {
-  id          String   @id @default(cuid())
-  filename    String
-  originalName String
-  url         String
-  caption     String?
-  createdAt   DateTime @default(now())
-  
-  inspectionId String?
-  inspection   Inspection? @relation(fields: [inspectionId], references: [id])
-  
-  ncrId       String?
-  ncr         NCR? @relation(fields: [ncrId], references: [id])
-  
-  @@map("photos")
-}
-
 // Enums
 enum UserRole {
   ADMIN
@@ -201,6 +262,29 @@ enum ProjectRole {
   SUPERVISOR
   INSPECTOR
   MEMBER
+}
+
+// NEW: ITP Related Enums
+enum ITPStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  APPROVED
+  REJECTED
+}
+
+enum CheckpointStatus {
+  PENDING
+  PASSED
+  FAILED
+}
+
+enum InspectionType {
+  VISUAL
+  DIMENSIONAL
+  MATERIAL_TEST
+  PERFORMANCE
+  SAFETY
 }
 
 enum InspectionStatus {

@@ -1,9 +1,11 @@
-version: '3.8'
+# COREVQC Docker Compose - Database Services Only
+# This simplified version starts only the essential database services
 
 services:
-  # Database
+  # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
+    container_name: corevqc_postgres
     environment:
       POSTGRES_DB: corevqc_dev
       POSTGRES_USER: corevqc_user
@@ -18,10 +20,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   # Redis Cache
   redis:
     image: redis:7-alpine
+    container_name: corevqc_redis
     ports:
       - "6379:6379"
     volumes:
@@ -32,50 +36,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
-  # Backend API
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.dev
-    ports:
-      - "3001:3001"
-    environment:
-      - NODE_ENV=development
-      - DATABASE_URL=postgresql://corevqc_user:password@postgres:5432/corevqc_dev
-      - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=dev-secret-key
-      - PORT=3001
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    command: npm run dev
-
-  # Frontend Web App
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
-    ports:
-      - "3000:3000"
-    environment:
-      - REACT_APP_API_URL=http://localhost:3001
-      - REACT_APP_ENVIRONMENT=development
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    depends_on:
-      - backend
-    command: npm start
-
-  # MinIO (S3-compatible storage for development)
+  # MinIO (S3-compatible storage)
   minio:
     image: minio/minio:latest
+    container_name: corevqc_minio
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -85,8 +51,17 @@ services:
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    restart: unless-stopped
 
 volumes:
   postgres_data:
+    driver: local
   redis_data:
+    driver: local
   minio_data:
+    driver: local
