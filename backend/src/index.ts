@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
-import authRoutes from './routes/auth';
+// import authRoutes from './routes/auth';  // Comment out for now
 import projectRoutes from './routes/projects'; 
 import dashboardRoutes from './routes/dashboard';
 import analyticsRoutes from './routes/analytics';
@@ -11,7 +11,6 @@ import qualityRoutes from './routes/quality';
 dotenv.config();
 
 const app = express();
-// Railway provides PORT environment variable
 const PORT = process.env.PORT || 8000;
 const prisma = new PrismaClient();
 
@@ -21,7 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/api/auth', authRoutes);
+// app.use('/api/auth', authRoutes);  // Comment out for now
 app.use('/api/projects', projectRoutes); 
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/analytics', analyticsRoutes);
@@ -64,9 +63,6 @@ app.get('/api', (req, res) => {
     endpoints: [
       'GET /api/health - Health check',
       'GET /api/stats - Database statistics', 
-      'POST /api/auth/register - User registration',
-      'POST /api/auth/login - User login',
-      'GET /api/auth/profile - Get user profile',
       'GET /api/projects - Get all projects',
       'GET /api/quality-control/projects/:id/ncrs - Get NCRs',
       'GET /api/quality-control/projects/:id/itps - Get ITPs'
@@ -75,12 +71,33 @@ app.get('/api', (req, res) => {
   });
 });
 
+app.get('/api/stats', async (req, res) => {
+  try {
+    const [organizations, users, projects, inspections] = await Promise.all([
+      prisma.organization.count(),
+      prisma.user.count(), 
+      prisma.project.count(),
+      prisma.inspection.count()
+    ]);
+
+    res.json({
+      database: 'Connected',
+      statistics: { organizations, users, projects, inspections },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'Failed to fetch statistics'
+    });
+  }
+});
+
 // Catch all route
 app.use('*', (req, res) => {
   res.status(404).json({ 
     error: 'Not Found',
     message: `Route ${req.originalUrl} not found`,
-    availableRoutes: ['/api', '/api/health', '/api/stats', '/api/auth/*', '/api/projects/*']
+    availableRoutes: ['/api', '/api/health', '/api/stats', '/api/projects/*', '/api/quality-control/*']
   });
 });
 
@@ -89,15 +106,6 @@ process.on('SIGINT', async () => {
   console.log('\n🛑 Shutting down gracefully...');
   await prisma.$disconnect();
   process.exit(0);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-});
-
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
-  process.exit(1);
 });
 
 app.listen(PORT, '0.0.0.0', async () => {
