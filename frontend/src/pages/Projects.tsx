@@ -131,7 +131,7 @@ const Projects: React.FC = () => {
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8000/api/projects');
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/projects`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
