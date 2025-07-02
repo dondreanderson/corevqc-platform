@@ -54,3 +54,12 @@ app.get('/api/stats', async (req, res) => {
     });
   }
 });
+
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://corevqc-platform-frontend-8bsn29r0u-dondre-andersons-projects.vercel.app',
+    'https://corevqc-platform-frontend.vercel.app', // If you have a main domain
+    // Add any other Vercel preview URLs
+  ]
+}));
