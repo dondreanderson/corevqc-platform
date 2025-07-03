@@ -24,8 +24,10 @@ app.use(express.json());
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'https://corevqc-platform-frontend-5rrnv4857-dondre-andersons-projects.vercel.app',
-    'https://corevqc-platform-frontend.vercel.app'
+    'https://corevqc-platform-frontend-7ge4mq6l-dondre-andersons-projects.vercel.app', // Updated URL
+    'https://corevqc-platform-frontend.vercel.app',
+    // Allow all Vercel preview URLs
+    /^https:\/\/corevqc-platform-frontend-.*\.vercel\.app$/
   ]
 }));
 
