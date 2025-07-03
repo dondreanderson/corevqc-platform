@@ -1,3 +1,11 @@
+import express from 'express';
+import cors from 'cors';
+import { PrismaClient } from '@prisma/client';
+
+const app = express();
+const PORT = process.env.PORT || 8000;
+const prisma = new PrismaClient();
+
 app.get('/api/stats', async (req, res) => {
   try {
     console.log('Checking database connection...');
@@ -55,6 +63,7 @@ app.get('/api/stats', async (req, res) => {
   }
 });
 
+app.use(express.json());
 app.use(cors({
   origin: [
     'http://localhost:3000',
