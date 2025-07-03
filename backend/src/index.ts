@@ -22,18 +22,18 @@ try {
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://corevqc-platform-frontend-7ge4mq6l-dondre-andersons-projects.vercel.app', // Updated URL
-    'https://corevqc-platform-frontend.vercel.app',
-    // Allow all Vercel preview URLs
-    /^https:\/\/corevqc-platform-frontend-.*\.vercel\.app$/
-  ]
+  origin: true, // Allow all origins - ONLY FOR TESTING!
+  credentials: true
 }));
 
 console.log('✅ Middleware configured');
 
 // Health check endpoint - MUST work for Railway deployment
+// Add both routes for Railway compatibility
+app.get('/health', async (req, res) => {
+  res.json({ status: 'OK' });
+});
+
 app.get('/api/health', async (req, res) => {
   try {
     // Simple health check without database
