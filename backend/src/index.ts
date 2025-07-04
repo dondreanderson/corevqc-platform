@@ -99,7 +99,7 @@ app.get('/api/projects', async (req, res) => {
     const projects = await prisma.project.findMany({
       include: {
         organization: true,
-       // manager: true
+        owner: true
       }
     });
     res.json(projects);
