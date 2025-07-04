@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CreateProject from '../components/CreateProject';
-import '../styles/Projects.css';
+//import '../styles/projects.css';
 
 const Projects: React.FC = () => {
   const [projects, setProjects] = useState<any[]>([]);
