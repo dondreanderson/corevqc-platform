@@ -109,6 +109,61 @@ app.get('/api/projects', async (req, res) => {
   }
 });
 
+// Create new project endpoint
+app.post('/api/projects', async (req, res) => {
+  try {
+    console.log('🔍 Creating new project:', req.body);
+    
+    const { 
+      name, 
+      description, 
+      status, 
+      priority, 
+      budget, 
+      clientName, 
+      clientContact, 
+      projectType, 
+      startDate, 
+      endDate, 
+      location 
+    } = req.body;
+
+    // Basic validation
+    if (!name) {
+      return res.status(400).json({ error: 'Project name is required' });
+    }
+
+    const newProject = await prisma.project.create({
+      data: {
+        name,
+        description,
+        status: status || 'PLANNING',
+        priority: priority || 'MEDIUM',
+        budget: budget ? parseFloat(budget) : null,
+        clientName,
+        clientContact,
+        projectType,
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null,
+        location,
+        progress: 0,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    });
+
+    console.log('✅ Project created successfully:', newProject);
+    res.status(201).json(newProject);
+
+  } catch (error) {
+    console.error('❌ Error creating project:', error);
+    res.status(500).json({ 
+      error: 'Failed to create project', 
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // Global error handler
 app.use((error: any, req: any, res: any, next: any) => {
   console.error('Global error handler:', error);
