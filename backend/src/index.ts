@@ -22,8 +22,12 @@ try {
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: true, // Allow all origins - ONLY FOR TESTING!
-  credentials: true
+  origin: [
+    'http://localhost:3000',
+    'https://corevqc-platform-frontend-7ge4mq6l-dondre-andersons-projects.vercel.app', // Your current Vercel URL
+    'https://corevqc-platform-frontend.vercel.app',
+    /^https:\/\/corevqc-platform-frontend-.*\.vercel\.app$/ // Match all Vercel preview URLs
+  ]
 }));
 
 console.log('✅ Middleware configured');
