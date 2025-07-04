@@ -54,6 +54,23 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
+// Add this RIGHT after your health check routes
+app.get('/debug', (req, res) => {
+  res.json({
+    message: 'Debug endpoint working',
+    port: PORT,
+    env: process.env.NODE_ENV,
+    timestamp: new Date().toISOString(),
+    headers: req.headers
+  });
+});
+
+// Add this to log ALL requests
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
+
 // Stats endpoint with database connection test
 app.get('/api/stats', async (req, res) => {
   try {
@@ -82,7 +99,7 @@ app.get('/api/projects', async (req, res) => {
     const projects = await prisma.project.findMany({
       include: {
         organization: true,
-        manager: true
+       // manager: true
       }
     });
     res.json(projects);
