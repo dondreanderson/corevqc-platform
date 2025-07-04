@@ -21,26 +21,30 @@ try {
 
 // Middleware
 app.use(express.json());
+
+// TEMPORARILY ALLOW ALL ORIGINS FOR TESTING
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://corevqc-platform-frontend-7ge4mq6l-dondre-andersons-projects.vercel.app', // Your current Vercel URL
-    'https://corevqc-platform-frontend.vercel.app',
-    /^https:\/\/corevqc-platform-frontend-.*\.vercel\.app$/ // Match all Vercel preview URLs
-  ]
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 console.log('✅ Middleware configured');
 
-// Health check endpoint - MUST work for Railway deployment
-// Add both routes for Railway compatibility
-app.get('/health', async (req, res) => {
+// Add this to log ALL requests
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
+
+// Health check endpoints
+app.get('/health', (req, res) => {
   res.json({ status: 'OK' });
 });
 
-app.get('/api/health', async (req, res) => {
+app.get('/api/health', (req, res) => {
   try {
-    // Simple health check without database
     res.json({ 
       status: 'OK', 
       message: 'COREVQC Backend is running!', 
@@ -58,24 +62,16 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// Add this RIGHT after your health check routes
-app.get('/debug', (req, res) => {
+// Test endpoint
+app.get('/api/test', (req, res) => {
   res.json({
-    message: 'Debug endpoint working',
-    port: PORT,
-    env: process.env.NODE_ENV,
+    message: 'Test route working!',
     timestamp: new Date().toISOString(),
     headers: req.headers
   });
 });
 
-// Add this to log ALL requests
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-  next();
-});
-
-// Stats endpoint with database connection test
+// Stats endpoint
 app.get('/api/stats', async (req, res) => {
   try {
     const organizationCount = await prisma.organization.count();
@@ -97,18 +93,15 @@ app.get('/api/stats', async (req, res) => {
   }
 });
 
-// Projects endpoint
+// Projects endpoint - SIMPLIFIED
 app.get('/api/projects', async (req, res) => {
   try {
-    const projects = await prisma.project.findMany({
-      include: {
-        organization: true,
-        owner: true
-      }
-    });
+    console.log('🔍 Projects endpoint called');
+    const projects = await prisma.project.findMany();
+    console.log('📊 Found projects:', projects.length);
     res.json(projects);
   } catch (error) {
-    console.error('Error fetching projects:', error);
+    console.error('❌ Error fetching projects:', error);
     res.status(500).json({ 
       error: 'Failed to fetch projects', 
       details: error instanceof Error ? error.message : 'Unknown error'
@@ -125,7 +118,7 @@ app.use((error: any, req: any, res: any, next: any) => {
   });
 });
 
-// Start server with error handling
+// Start server
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log('🚀 COREVQC Backend Server Started');
   console.log(`📡 Server running on: http://0.0.0.0:${PORT}`);
@@ -139,23 +132,11 @@ server.on('error', (error) => {
   process.exit(1);
 });
 
-// Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-  console.error('❌ Uncaught Exception:', error);
-  process.exit(1);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
-  process.exit(1);
-});
-
-// Test database connection (but don't block startup)
+// Test database connection
 prisma.$connect()
   .then(() => {
     console.log('✅ Database connected successfully');
   })
   .catch((error) => {
     console.error('❌ Database connection failed:', error);
-    // Don't exit here - let the app run without database for now
   });
