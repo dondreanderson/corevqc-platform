@@ -80,7 +80,7 @@ app.get('/api/projects', async (req, res) => {
   }
 });
 
-// POST projects endpoint - CREATE NEW PROJECT
+// POST projects endpoint - CREATE NEW PROJECT (FIXED FOR ORGANIZATION)
 app.post('/api/projects', async (req, res) => {
   try {
     console.log('🔍 Creating new project - received data:', req.body);
@@ -93,20 +93,40 @@ app.post('/api/projects', async (req, res) => {
       return res.status(400).json({ error: 'Project name is required' });
     }
 
+    // First, ensure we have a default organization
+    let defaultOrg = await prisma.organization.findFirst({
+      where: { name: 'Default Organization' }
+    });
+
+    if (!defaultOrg) {
+      console.log('📝 Creating default organization...');
+      defaultOrg = await prisma.organization.create({
+        data: {
+          name: 'Default Organization',
+          description: 'Default organization for projects'
+        }
+      });
+      console.log('✅ Default organization created:', defaultOrg);
+    }
+
     // Clean the data
     const projectData = {
       name: name.trim(),
       description: description?.trim() || null,
       status: status || 'PLANNING',
       priority: priority || 'MEDIUM',
-      progress: 0
+      progress: 0,
+      organizationId: defaultOrg.id  // Connect to the default organization
     };
 
     console.log('📝 Prepared project data:', projectData);
 
     // Create the project
     const newProject = await prisma.project.create({
-      data: projectData
+      data: projectData,
+      include: {
+        organization: true  // Include organization in response
+      }
     });
 
     console.log('✅ Project created successfully:', newProject);
@@ -130,6 +150,7 @@ app.post('/api/projects', async (req, res) => {
     }
   }
 });
+
 
 // Stats endpoint
 app.get('/api/stats', async (req, res) => {
