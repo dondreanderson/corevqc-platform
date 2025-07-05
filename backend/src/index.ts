@@ -22,7 +22,7 @@ try {
 // Middleware
 app.use(express.json());
 
-// TEMPORARILY ALLOW ALL ORIGINS FOR TESTING
+// CORS configuration
 app.use(cors({
   origin: true,
   credentials: true,
@@ -32,9 +32,12 @@ app.use(cors({
 
 console.log('✅ Middleware configured');
 
-// Add this to log ALL requests
+// Debug logging
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  if (req.method === 'POST') {
+    console.log('POST Body:', req.body);
+  }
   next();
 });
 
@@ -44,31 +47,88 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/api/health', (req, res) => {
-  try {
-    res.json({ 
-      status: 'OK', 
-      message: 'COREVQC Backend is running!', 
-      timestamp: new Date().toISOString(),
-      version: '1.0.0',
-      port: PORT
-    });
-  } catch (error) {
-    console.error('Health check failed:', error);
-    res.status(500).json({ 
-      status: 'ERROR', 
-      message: 'Health check failed',
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
+  res.json({ 
+    status: 'OK', 
+    message: 'COREVQC Backend is running!', 
+    timestamp: new Date().toISOString(),
+    version: '1.0.0',
+    port: PORT
+  });
 });
 
 // Test endpoint
 app.get('/api/test', (req, res) => {
   res.json({
     message: 'Test route working!',
-    timestamp: new Date().toISOString(),
-    headers: req.headers
+    timestamp: new Date().toISOString()
   });
+});
+
+// GET projects endpoint
+app.get('/api/projects', async (req, res) => {
+  try {
+    console.log('🔍 GET Projects endpoint called');
+    const projects = await prisma.project.findMany();
+    console.log('📊 Found projects:', projects.length);
+    res.json(projects);
+  } catch (error) {
+    console.error('❌ Error fetching projects:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch projects', 
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// POST projects endpoint - CREATE NEW PROJECT
+app.post('/api/projects', async (req, res) => {
+  try {
+    console.log('🔍 Creating new project - received data:', req.body);
+    
+    const { name, description, status, priority } = req.body;
+
+    // Validate required fields
+    if (!name || name.trim() === '') {
+      console.error('❌ Validation failed: name is required');
+      return res.status(400).json({ error: 'Project name is required' });
+    }
+
+    // Clean the data
+    const projectData = {
+      name: name.trim(),
+      description: description?.trim() || null,
+      status: status || 'PLANNING',
+      priority: priority || 'MEDIUM',
+      progress: 0
+    };
+
+    console.log('📝 Prepared project data:', projectData);
+
+    // Create the project
+    const newProject = await prisma.project.create({
+      data: projectData
+    });
+
+    console.log('✅ Project created successfully:', newProject);
+    res.status(201).json(newProject);
+
+  } catch (error) {
+    console.error('❌ Error creating project:', error);
+    
+    // Send detailed error info
+    if (error instanceof Error) {
+      res.status(500).json({ 
+        error: 'Failed to create project', 
+        details: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    } else {
+      res.status(500).json({ 
+        error: 'Failed to create project', 
+        details: 'Unknown error occurred'
+      });
+    }
+  }
 });
 
 // Stats endpoint
@@ -88,77 +148,6 @@ app.get('/api/stats', async (req, res) => {
     console.error('Database query failed:', error);
     res.status(500).json({ 
       error: 'Database connection failed', 
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-});
-
-// Projects endpoint - SIMPLIFIED
-app.get('/api/projects', async (req, res) => {
-  try {
-    console.log('🔍 Projects endpoint called');
-    const projects = await prisma.project.findMany();
-    console.log('📊 Found projects:', projects.length);
-    res.json(projects);
-  } catch (error) {
-    console.error('❌ Error fetching projects:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch projects', 
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-});
-
-// Create new project endpoint
-app.post('/api/projects', async (req, res) => {
-  try {
-    console.log('🔍 Creating new project:', req.body);
-    
-    const { 
-      name, 
-      description, 
-      status, 
-      priority, 
-      budget, 
-      clientName, 
-      clientContact, 
-      projectType, 
-      startDate, 
-      endDate, 
-      location 
-    } = req.body;
-
-    // Basic validation
-    if (!name) {
-      return res.status(400).json({ error: 'Project name is required' });
-    }
-
-    const newProject = await prisma.project.create({
-      data: {
-        name,
-        description,
-        status: status || 'PLANNING',
-        priority: priority || 'MEDIUM',
-        budget: budget ? parseFloat(budget) : null,
-        clientName,
-        clientContact,
-        projectType,
-        startDate: startDate ? new Date(startDate) : null,
-        endDate: endDate ? new Date(endDate) : null,
-        location,
-        progress: 0,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-    });
-
-    console.log('✅ Project created successfully:', newProject);
-    res.status(201).json(newProject);
-
-  } catch (error) {
-    console.error('❌ Error creating project:', error);
-    res.status(500).json({ 
-      error: 'Failed to create project', 
       details: error instanceof Error ? error.message : 'Unknown error'
     });
   }
