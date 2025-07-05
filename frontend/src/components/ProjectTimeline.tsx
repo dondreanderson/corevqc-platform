@@ -110,7 +110,7 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ project }) => {
             <div className="timeline-content">
               <div className="timeline-event-header">
                 <h4 className="event-title">{event.title}</h4>
-                <span className="event-date">{formatDate(event.date)}</span>
+                <span className="event-date">{formatDate(event.date || null)}</span>
               </div>
               <p className="event-description">{event.description}</p>
               <div className="event-status">
