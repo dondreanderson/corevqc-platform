@@ -21,11 +21,12 @@ interface Project {
 interface ProjectCardProps {
   project: Project;
   viewMode: 'grid' | 'list';
+  onView: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ project, viewMode, onEdit, onDelete }) => {
+const ProjectCard: React.FC<ProjectCardProps> = ({ project, viewMode, onView, onEdit, onDelete }) => {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'planning':
@@ -80,7 +81,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, viewMode, onEdit, on
     <div className={`project-card ${viewMode}`}>
       <div className="card-header">
         <div className="card-title-section">
-          <h3 className="project-title">{project.name}</h3>
+          <h3 className="project-title" onClick={onView} style={{ cursor: 'pointer' }}>
+            {project.name}
+          </h3>
           <div className="project-badges">
             <span className={`status-badge ${getStatusColor(project.status)}`}>
               {project.status.replace('_', ' ')}
@@ -91,6 +94,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, viewMode, onEdit, on
           </div>
         </div>
         <div className="card-actions">
+          <button 
+            onClick={onView}
+            className="btn-icon"
+            title="View project details"
+          >
+            👁️
+          </button>
           <button 
             onClick={onEdit}
             className="btn-icon"
@@ -174,7 +184,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, viewMode, onEdit, on
         <span className="created-date">
           Created {formatDate(project.createdAt)}
         </span>
-        <button className="btn-view-details">
+        <button onClick={onView} className="btn-view-details">
           View Details →
         </button>
       </div>

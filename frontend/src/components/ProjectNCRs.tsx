@@ -1,0 +1,257 @@
+import React, { useState } from 'react';
+
+interface Project {
+  id: string;
+  name: string;
+}
+
+interface ProjectNCRsProps {
+  project: Project;
+}
+
+interface NCR {
+  id: string;
+  ncrNumber: string;
+  title: string;
+  description: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  status: 'open' | 'in_progress' | 'resolved' | 'closed';
+  category: string;
+  location: string;
+  reportedBy: string;
+  reportedDate: string;
+  dueDate?: string;
+}
+
+const ProjectNCRs: React.FC<ProjectNCRsProps> = ({ project }) => {
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [showCreateNCR, setShowCreateNCR] = useState(false);
+
+  // Mock NCR data
+  const ncrs: NCR[] = [
+    {
+      id: '1',
+      ncrNumber: 'NCR-001',
+      title: 'Concrete cracks in foundation',
+      description: 'Multiple hairline cracks found in the foundation concrete',
+      severity: 'high',
+      status: 'open',
+      category: 'Structural',
+      location: 'Foundation - Section A',
+      reportedBy: 'Mike Chen',
+      reportedDate: '2024-07-01',
+      dueDate: '2024-07-15'
+    },
+    {
+      id: '2',
+      ncrNumber: 'NCR-002',
+      title: 'Incorrect rebar placement',
+      description: 'Rebar spacing does not match approved drawings',
+      severity: 'medium',
+      status: 'in_progress',
+      category: 'Quality',
+      location: 'Floor 2 - Grid B-C',
+      reportedBy: 'Sarah Johnson',
+      reportedDate: '2024-07-02',
+      dueDate: '2024-07-10'
+    },
+    {
+      id: '3',
+      ncrNumber: 'NCR-003',
+      title: 'Safety equipment missing',
+      description: 'Workers observed without proper PPE',
+      severity: 'critical',
+      status: 'resolved',
+      category: 'Safety',
+      location: 'Construction Site - All Areas',
+      reportedBy: 'Emily Davis',
+      reportedDate: '2024-06-28'
+    }
+  ];
+
+  const statusOptions = [
+    { id: 'all', label: 'All NCRs', count: ncrs.length },
+    { id: 'open', label: 'Open', count: ncrs.filter(n => n.status === 'open').length },
+    { id: 'in_progress', label: 'In Progress', count: ncrs.filter(n => n.status === 'in_progress').length },
+    { id: 'resolved', label: 'Resolved', count: ncrs.filter(n => n.status === 'resolved').length },
+    { id: 'closed', label: 'Closed', count: ncrs.filter(n => n.status === 'closed').length }
+  ];
+
+  const filteredNCRs = selectedStatus === 'all' 
+    ? ncrs 
+    : ncrs.filter(ncr => ncr.status === selectedStatus);
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'low':
+        return 'severity-low';
+      case 'medium':
+        return 'severity-medium';
+      case 'high':
+        return 'severity-high';
+      case 'critical':
+        return 'severity-critical';
+      default:
+        return 'severity-medium';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'open':
+        return 'status-open';
+      case 'in_progress':
+        return 'status-progress';
+      case 'resolved':
+        return 'status-resolved';
+      case 'closed':
+        return 'status-closed';
+      default:
+        return 'status-open';
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  return (
+    <div className="project-ncrs">
+      <div className="ncrs-header">
+        <div className="header-info">
+          <h3>Non-Conformance Reports</h3>
+          <span className="ncr-count">{filteredNCRs.length} NCRs</span>
+        </div>
+        <button 
+          onClick={() => setShowCreateNCR(true)}
+          className="btn-primary"
+        >
+          📋 Create NCR
+        </button>
+      </div>
+
+      <div className="ncrs-filters">
+        <div className="status-tabs">
+          {statusOptions.map((status) => (
+            <button
+              key={status.id}
+              onClick={() => setSelectedStatus(status.id)}
+              className={`status-tab ${selectedStatus === status.id ? 'active' : ''}`}
+            >
+              {status.label}
+              <span className="status-count">({status.count})</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="ncrs-list">
+        {filteredNCRs.map((ncr) => (
+          <div key={ncr.id} className="ncr-card">
+            <div className="ncr-header">
+              <div className="ncr-number">{ncr.ncrNumber}</div>
+              <div className="ncr-badges">
+                <span className={`severity-badge ${getSeverityColor(ncr.severity)}`}>
+                  {ncr.severity.toUpperCase()}
+                </span>
+                <span className={`status-badge ${getStatusColor(ncr.status)}`}>
+                  {ncr.status.replace('_', ' ').toUpperCase()}
+                </span>
+              </div>
+            </div>
+
+            <div className="ncr-content">
+              <h4 className="ncr-title">{ncr.title}</h4>
+              <p className="ncr-description">{ncr.description}</p>
+              
+              <div className="ncr-details">
+                <div className="detail-row">
+                  <span className="detail-label">Category:</span>
+                  <span className="detail-value">{ncr.category}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Location:</span>
+                  <span className="detail-value">{ncr.location}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Reported by:</span>
+                  <span className="detail-value">{ncr.reportedBy}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Date:</span>
+                  <span className="detail-value">{formatDate(ncr.reportedDate)}</span>
+                </div>
+                {ncr.dueDate && (
+                  <div className="detail-row">
+                    <span className="detail-label">Due:</span>
+                    <span className="detail-value due-date">{formatDate(ncr.dueDate)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="ncr-actions">
+              <button className="action-btn">👁️ View</button>
+              <button className="action-btn">✏️ Edit</button>
+              <button className="action-btn">📎 Attach</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {filteredNCRs.length === 0 && (
+        <div className="empty-ncrs">
+          <div className="empty-icon">📋</div>
+          <h4>No NCRs found</h4>
+          <p>No non-conformance reports match the selected filter</p>
+        </div>
+      )}
+
+      {showCreateNCR && (
+        <div className="create-ncr-modal">
+          <div className="modal-overlay" onClick={() => setShowCreateNCR(false)}></div>
+          <div className="modal-content">
+            <h4>Create Non-Conformance Report</h4>
+            <form className="ncr-form">
+              <input type="text" placeholder="NCR Title" required />
+              <textarea placeholder="Description" rows={4} required></textarea>
+              <div className="form-row">
+                <select required>
+                  <option value="">Select Severity</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
+                <select required>
+                  <option value="">Select Category</option>
+                  <option value="structural">Structural</option>
+                  <option value="quality">Quality</option>
+                  <option value="safety">Safety</option>
+                  <option value="material">Material</option>
+                  <option value="workmanship">Workmanship</option>
+                </select>
+              </div>
+              <input type="text" placeholder="Location" required />
+              <input type="date" placeholder="Due Date" />
+              <div className="form-actions">
+                <button type="button" onClick={() => setShowCreateNCR(false)} className="btn-secondary">
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary">
+                  Create NCR
+                </button>
+</div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ProjectNCRs;

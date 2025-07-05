@@ -11,7 +11,7 @@ import MobileNavigation from './components/MobileNavigation';
 // Import your pages
 import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
-import ProjectDetails from './pages/ProjectDetails';
+import ProjectDetails from './pages/ProjectDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
 

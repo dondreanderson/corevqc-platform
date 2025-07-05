@@ -1,26 +1,74 @@
+import React, { useState } from 'react';
 
-// src/components/ProjectOverview.tsx
-import React from 'react';
-import type { EnhancedProject } from '../types/project';
-
-interface ProjectOverviewProps {
-  project: EnhancedProject;
-  onAction?: (action: string, data?: any) => void;
-  isEditable?: boolean;
-  showActions?: boolean;
+interface Project {
+  id: string;
+  name: string;
+  description?: string;
+  status: string;
+  priority: string;
+  progress: number;
+  budget?: number;
+  clientName?: string;
+  clientContact?: string;
+  projectType?: string;
+  startDate?: string;
+  endDate?: string;
+  location?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-const ProjectOverview: React.FC<ProjectOverviewProps> = ({
-  project,
-  onAction,
-  isEditable = false,
-  showActions = true
+interface ProjectOverviewProps {
+  project: Project;
+  onStatusChange: (status: string) => void;
+  onProgressUpdate: (progress: number) => void;
+}
+
+const ProjectOverview: React.FC<ProjectOverviewProps> = ({ 
+  project, 
+  onStatusChange, 
+  onProgressUpdate 
 }) => {
-  // Utility functions
+  const [isEditingProgress, setIsEditingProgress] = useState(false);
+  const [newProgress, setNewProgress] = useState(project.progress);
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'planning':
+        return 'status-planning';
+      case 'in_progress':
+      case 'active':
+        return 'status-active';
+      case 'on_hold':
+        return 'status-on-hold';
+      case 'completed':
+        return 'status-completed';
+      case 'cancelled':
+        return 'status-cancelled';
+      default:
+        return 'status-default';
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority.toLowerCase()) {
+      case 'low':
+        return 'priority-low';
+      case 'medium':
+        return 'priority-medium';
+      case 'high':
+        return 'priority-high';
+      case 'urgent':
+        return 'priority-urgent';
+      default:
+        return 'priority-medium';
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
-      month: 'short',
+      month: 'long',
       day: 'numeric'
     });
   };
@@ -28,173 +76,192 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'in-progress':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'on-hold':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800 border-red-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+  const handleProgressSubmit = () => {
+    if (newProgress >= 0 && newProgress <= 100) {
+      onProgressUpdate(newProgress);
+      setIsEditingProgress(false);
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low':
-        return 'bg-green-100 text-green-800 border-green-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
+  const calculateDaysRemaining = () => {
+    if (!project.endDate) return null;
+    const today = new Date();
+    const endDate = new Date(project.endDate);
+    const diffTime = endDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
   };
 
-  // Event handlers
-  const handleEdit = () => {
-    if (onAction) {
-      onAction('edit');
-    }
-  };
-
-  const handleSave = () => {
-    if (onAction) {
-      onAction('save', project);
-    }
-  };
-
-  const handleDelete = () => {
-    if (onAction && window.confirm('Are you sure you want to delete this project?')) {
-      onAction('delete');
-    }
-  };
+  const daysRemaining = calculateDaysRemaining();
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {project.title}
-          </h1>
-          <p className="text-gray-600">
-            {project.description}
-          </p>
+    <div className="project-overview">
+      {/* Key Metrics */}
+      <div className="metrics-grid">
+        <div className="metric-card">
+          <div className="metric-header">
+            <h3>Project Status</h3>
+            <select 
+              value={project.status}
+              onChange={(e) => onStatusChange(e.target.value)}
+              className={`status-select ${getStatusColor(project.status)}`}
+            >
+              <option value="PLANNING">Planning</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="ON_HOLD">On Hold</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </div>
         </div>
-        
-        {showActions && (
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={handleEdit}
-              className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 border border-blue-300 rounded-md hover:bg-blue-200 transition-colors"
-            >
-              Edit
-            </button>
-            <button
-              onClick={handleSave}
-              className="px-4 py-2 text-sm font-medium text-green-700 bg-green-100 border border-green-300 rounded-md hover:bg-green-200 transition-colors"
-            >
-              Save
-            </button>
-            <button
-              onClick={handleDelete}
-              className="px-4 py-2 text-sm font-medium text-red-700 bg-red-100 border border-red-300 rounded-md hover:bg-red-200 transition-colors"
-            >
-              Delete
-            </button>
+
+        <div className="metric-card">
+          <div className="metric-header">
+            <h3>Progress</h3>
+            {isEditingProgress ? (
+              <div className="progress-edit">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={newProgress}
+                  onChange={(e) => setNewProgress(parseInt(e.target.value) || 0)}
+                  className="progress-input"
+                />
+                <button onClick={handleProgressSubmit} className="btn-save">✓</button>
+                <button onClick={() => setIsEditingProgress(false)} className="btn-cancel">✕</button>
+              </div>
+            ) : (
+              <div className="progress-display" onClick={() => setIsEditingProgress(true)}>
+                <span className="progress-percentage">{project.progress}%</span>
+                <button className="edit-progress-btn">✏️</button>
+              </div>
+            )}
+          </div>
+          <div className="progress-bar-large">
+            <div 
+              className="progress-fill" 
+              style={{ width: `${project.progress}%` }}
+            ></div>
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-header">
+            <h3>Priority</h3>
+            <span className={`priority-badge-large ${getPriorityColor(project.priority)}`}>
+              {project.priority}
+            </span>
+          </div>
+        </div>
+
+        {daysRemaining !== null && (
+          <div className="metric-card">
+            <div className="metric-header">
+              <h3>Days Remaining</h3>
+              <span className={`days-remaining ${daysRemaining < 7 ? 'urgent' : daysRemaining < 30 ? 'warning' : 'normal'}`}>
+                {daysRemaining > 0 ? `${daysRemaining} days` : 'Overdue'}
+              </span>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Status and Priority */}
-      <div className="flex items-center space-x-4 mb-6">
-        <span className={`px-3 py-1 text-sm font-medium rounded-full border ${getStatusColor(project.status)}`}>
-          {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
-        </span>
-        <span className={`px-3 py-1 text-sm font-medium rounded-full border ${getPriorityColor(project.priority)}`}>
-          {project.priority.charAt(0).toUpperCase() + project.priority.slice(1)} Priority
-        </span>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700">Progress</span>
-          <span className="text-sm font-medium text-gray-700">{project.completion}%</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${project.completion}%` }}
-          ></div>
-        </div>
-      </div>
-
-      {/* Project Details Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        {/* Dates */}
-        <div className="bg-gray-50 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Timeline</h3>
-          <div className="space-y-1 text-sm text-gray-600">
-            <div>Start: {formatDate(project.startDate)}</div>
-            <div>End: {formatDate(project.endDate)}</div>
+      {/* Project Information */}
+      <div className="info-grid">
+        <div className="info-section">
+          <h3>Project Information</h3>
+          <div className="info-list">
+            <div className="info-item">
+              <span className="info-label">Project Type:</span>
+              <span className="info-value">{project.projectType || 'Not specified'}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">Location:</span>
+              <span className="info-value">{project.location || 'Not specified'}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">Created:</span>
+              <span className="info-value">{formatDate(project.createdAt)}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">Last Updated:</span>
+              <span className="info-value">{formatDate(project.updatedAt)}</span>
+            </div>
           </div>
         </div>
 
-        {/* Budget */}
-        <div className="bg-gray-50 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Budget</h3>
-          <div className="space-y-1 text-sm text-gray-600">
-            <div>Total: {formatCurrency(project.budget)}</div>
-            <div>Spent: {formatCurrency(project.spent)}</div>
-            <div>Remaining: {formatCurrency(project.budget - project.spent)}</div>
+        <div className="info-section">
+          <h3>Client Information</h3>
+          <div className="info-list">
+            <div className="info-item">
+              <span className="info-label">Client Name:</span>
+              <span className="info-value">{project.clientName || 'Not specified'}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">Contact:</span>
+              <span className="info-value">{project.clientContact || 'Not specified'}</span>
+            </div>
           </div>
         </div>
 
-        {/* Team */}
-        <div className="bg-gray-50 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Team</h3>
-          <div className="space-y-1 text-sm text-gray-600">
-            <div>Team Size: {project.teamSize} members</div>
-            <div>Owner: {project.owner}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tags */}
-      {project.tags && project.tags.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Tags</h3>
-          <div className="flex flex-wrap gap-2">
-            {project.tags.map((tag, index) => (
-              <span
-                key={index}
-                className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
-              >
-                {tag}
+        <div className="info-section">
+          <h3>Timeline</h3>
+          <div className="info-list">
+            <div className="info-item">
+              <span className="info-label">Start Date:</span>
+              <span className="info-value">
+                {project.startDate ? formatDate(project.startDate) : 'Not set'}
               </span>
-            ))}
+            </div>
+            <div className="info-item">
+              <span className="info-label">End Date:</span>
+              <span className="info-value">
+                {project.endDate ? formatDate(project.endDate) : 'Not set'}
+              </span>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Last Updated */}
-      <div className="text-sm text-gray-500 text-center">
-        Last updated: {formatDate(project.lastUpdated)}
+        <div className="info-section">
+          <h3>Budget</h3>
+          <div className="info-list">
+            <div className="info-item">
+              <span className="info-label">Total Budget:</span>
+              <span className="info-value budget">
+                {project.budget ? formatCurrency(project.budget) : 'Not specified'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="quick-actions">
+        <h3>Quick Actions</h3>
+        <div className="action-buttons">
+          <button className="action-btn ncr">
+            📋 Create NCR
+          </button>
+          <button className="action-btn itp">
+            ✅ Create ITP
+          </button>
+          <button className="action-btn document">
+            📁 Upload Document
+          </button>
+          <button className="action-btn inspection">
+            🔍 Schedule Inspection
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
 export default ProjectOverview;
-            

@@ -131,6 +131,25 @@ app.post('/api/projects', async (req, res) => {
   }
 });
 
+// Add this to your backend index.ts
+app.get('/api/projects/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const project = await prisma.project.findUnique({
+      where: { id }
+    });
+    
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+    
+    res.json(project);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch project' });
+  }
+});
+
+
 // Stats endpoint
 app.get('/api/stats', async (req, res) => {
   try {

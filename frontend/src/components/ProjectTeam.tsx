@@ -1,0 +1,214 @@
+import React, { useState } from 'react';
+
+interface Project {
+  id: string;
+  name: string;
+}
+
+interface ProjectTeamProps {
+  project: Project;
+}
+
+interface TeamMember {
+  id: string;
+  name: string;
+  role: string;
+  email: string;
+  phone?: string;
+  avatar?: string;
+  status: 'active' | 'inactive';
+  joinedDate: string;
+}
+
+const ProjectTeam: React.FC<ProjectTeamProps> = ({ project }) => {
+  const [showAddMember, setShowAddMember] = useState(false);
+
+  // Mock team data - in real app, this would come from API
+  const teamMembers: TeamMember[] = [
+    {
+      id: '1',
+      name: 'John Smith',
+      role: 'Project Manager',
+      email: 'john.smith@company.com',
+      phone: '+1 (555) 123-4567',
+      status: 'active',
+      joinedDate: '2024-01-15'
+    },
+    {
+      id: '2',
+      name: 'Sarah Johnson',
+      role: 'Site Supervisor',
+      email: 'sarah.johnson@company.com',
+      phone: '+1 (555) 234-5678',
+      status: 'active',
+      joinedDate: '2024-02-01'
+    },
+    {
+      id: '3',
+      name: 'Mike Chen',
+      role: 'Quality Inspector',
+      email: 'mike.chen@company.com',
+      phone: '+1 (555) 345-6789',
+      status: 'active',
+      joinedDate: '2024-02-15'
+    },
+    {
+      id: '4',
+      name: 'Emily Davis',
+      role: 'Safety Officer',
+      email: 'emily.davis@company.com',
+      phone: '+1 (555) 456-7890',
+      status: 'active',
+      joinedDate: '2024-03-01'
+    }
+  ];
+
+  const getRoleColor = (role: string) => {
+    switch (role.toLowerCase()) {
+      case 'project manager':
+        return 'role-manager';
+      case 'site supervisor':
+        return 'role-supervisor';
+      case 'quality inspector':
+        return 'role-inspector';
+      case 'safety officer':
+        return 'role-safety';
+      default:
+        return 'role-default';
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+
+  return (
+    <div className="project-team">
+      <div className="team-header">
+        <div className="header-info">
+          <h3>Team Members</h3>
+          <span className="team-count">{teamMembers.length} members</span>
+        </div>
+        <button 
+          onClick={() => setShowAddMember(true)}
+          className="btn-primary"
+        >
+          👥 Add Member
+        </button>
+      </div>
+
+      <div className="team-grid">
+        {teamMembers.map((member) => (
+          <div key={member.id} className="team-member-card">
+            <div className="member-header">
+              <div className="member-avatar">
+                {member.avatar ? (
+                  <img src={member.avatar} alt={member.name} />
+                ) : (
+                  <div className="avatar-placeholder">
+                    {getInitials(member.name)}
+                  </div>
+                )}
+                <div className={`status-indicator ${member.status}`}></div>
+              </div>
+              <div className="member-actions">
+                <button className="action-btn">✏️</button>
+                <button className="action-btn">📧</button>
+                <button className="action-btn">📞</button>
+              </div>
+            </div>
+
+            <div className="member-info">
+              <h4 className="member-name">{member.name}</h4>
+              <span className={`member-role ${getRoleColor(member.role)}`}>
+                {member.role}
+              </span>
+            </div>
+
+            <div className="member-contact">
+              <div className="contact-item">
+                <span className="contact-icon">📧</span>
+                <span className="contact-value">{member.email}</span>
+              </div>
+              {member.phone && (
+                <div className="contact-item">
+                  <span className="contact-icon">📞</span>
+                  <span className="contact-value">{member.phone}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="member-meta">
+              <span className="joined-date">
+                Joined {formatDate(member.joinedDate)}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="team-roles-summary">
+        <h4>Roles Overview</h4>
+        <div className="roles-grid">
+          <div className="role-stat">
+            <span className="role-count">1</span>
+            <span className="role-label">Project Manager</span>
+          </div>
+          <div className="role-stat">
+            <span className="role-count">1</span>
+            <span className="role-label">Site Supervisor</span>
+          </div>
+          <div className="role-stat">
+            <span className="role-count">1</span>
+            <span className="role-label">Quality Inspector</span>
+          </div>
+          <div className="role-stat">
+            <span className="role-count">1</span>
+            <span className="role-label">Safety Officer</span>
+          </div>
+        </div>
+      </div>
+
+      {showAddMember && (
+        <div className="add-member-modal">
+          <div className="modal-overlay" onClick={() => setShowAddMember(false)}></div>
+          <div className="modal-content">
+            <h4>Add Team Member</h4>
+            <form className="add-member-form">
+              <input type="text" placeholder="Full Name" />
+              <input type="email" placeholder="Email Address" />
+              <input type="tel" placeholder="Phone Number" />
+              <select>
+                <option value="">Select Role</option>
+                <option value="project_manager">Project Manager</option>
+                <option value="site_supervisor">Site Supervisor</option>
+                <option value="quality_inspector">Quality Inspector</option>
+                <option value="safety_officer">Safety Officer</option>
+                <option value="foreman">Foreman</option>
+                <option value="engineer">Engineer</option>
+              </select>
+              <div className="form-actions">
+                <button type="button" onClick={() => setShowAddMember(false)} className="btn-secondary">
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary">
+                  Add Member
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ProjectTeam;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CreateProject from '../components/CreateProject';
 import ProjectCard from '../components/ProjectCard';
 import ProjectFilters from '../components/ProjectFilters';
@@ -23,6 +24,7 @@ interface Project {
 }
 
 const Projects: React.FC = () => {
+  const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,13 +115,16 @@ const Projects: React.FC = () => {
     fetchProjects();
   };
 
+  const handleViewProject = (projectId: string) => {
+    navigate(`/projects/${projectId}`);
+  };
+
   const handleEditProject = (project: Project) => {
-    console.log('Edit project:', project);
-    // TODO: Implement edit functionality
+    navigate(`/projects/${project.id}/edit`);
   };
 
   const handleDeleteProject = async (projectId: string) => {
-    if (window.confirm('Are you sure you want to delete this project?')) {
+    if (window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
       try {
         const response = await fetch(`${process.env.REACT_APP_API_URL}/api/projects/${projectId}`, {
           method: 'DELETE',
@@ -237,6 +242,7 @@ const Projects: React.FC = () => {
               key={project.id}
               project={project}
               viewMode={viewMode}
+              onView={() => handleViewProject(project.id)}
               onEdit={() => handleEditProject(project)}
               onDelete={() => handleDeleteProject(project.id)}
             />
