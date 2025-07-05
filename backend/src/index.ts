@@ -80,7 +80,7 @@ app.get('/api/projects', async (req, res) => {
   }
 });
 
-// POST projects endpoint - HANDLE ALL REQUIRED FIELDS
+// POST projects endpoint - HANDLE REQUIRED OWNER
 app.post('/api/projects', async (req, res) => {
   try {
     console.log('🔍 Creating new project - received data:', req.body);
@@ -93,21 +93,41 @@ app.post('/api/projects', async (req, res) => {
       return res.status(400).json({ error: 'Project name is required' });
     }
 
-    // Create project with ONLY the basic fields that definitely exist
+    // First, ensure we have a default user (owner)
+    let defaultUser = await prisma.user.findFirst({
+      where: { email: 'admin@corevqc.com' }
+    });
+
+    if (!defaultUser) {
+      console.log('📝 Creating default user...');
+      defaultUser = await prisma.user.create({
+        data: {
+          email: 'admin@corevqc.com',
+          name: 'System Admin',
+          role: 'ADMIN'
+        }
+      });
+      console.log('✅ Default user created:', defaultUser);
+    }
+
+    // Create project with required owner
     const projectData = {
       name: name.trim(),
       description: description?.trim() || null,
       status: status || 'PLANNING',
       priority: priority || 'MEDIUM',
-      progress: 0
-      // Remove ALL relationships for now
+      progress: 0,
+      ownerId: defaultUser.id  // Provide the required owner
     };
 
     console.log('📝 Prepared project data:', projectData);
 
-    // Create the project with basic fields only
+    // Create the project
     const newProject = await prisma.project.create({
-      data: projectData
+      data: projectData,
+      include: {
+        owner: true  // Include owner in response
+      }
     });
 
     console.log('✅ Project created successfully:', newProject);
@@ -116,12 +136,10 @@ app.post('/api/projects', async (req, res) => {
   } catch (error) {
     console.error('❌ Error creating project:', error);
     
-    // Let's see the exact Prisma error
     if (error instanceof Error) {
       console.error('❌ Full error details:', {
         name: error.name,
-        message: error.message,
-        stack: error.stack
+        message: error.message
       });
       
       res.status(500).json({ 
@@ -137,6 +155,7 @@ app.post('/api/projects', async (req, res) => {
     }
   }
 });
+
 
 // Stats endpoint
 app.get('/api/stats', async (req, res) => {
