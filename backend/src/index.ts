@@ -80,7 +80,7 @@ app.get('/api/projects', async (req, res) => {
   }
 });
 
-// POST projects endpoint - NO OWNER REQUIRED
+// POST projects endpoint - FIXED VERSION
 app.post('/api/projects', async (req, res) => {
   try {
     console.log('🔍 Creating new project - received data:', req.body);
@@ -93,14 +93,35 @@ app.post('/api/projects', async (req, res) => {
       return res.status(400).json({ error: 'Project name is required' });
     }
 
-    // Create project without owner (now optional)
+    // STATUS VALIDATION - Map frontend values to valid Prisma enum values
+    const validStatusMap: { [key: string]: string } = {
+      'PLANNING': 'PLANNING',
+      'ACTIVE': 'IN_PROGRESS',      // Map ACTIVE to IN_PROGRESS
+      'IN_PROGRESS': 'IN_PROGRESS',
+      'ON_HOLD': 'ON_HOLD',
+      'COMPLETED': 'COMPLETED',
+      'CANCELLED': 'CANCELLED'
+    };
+
+    const validatedStatus = validStatusMap[status] || 'PLANNING';
+
+    // PRIORITY VALIDATION - Map frontend values to valid Prisma enum values
+    const validPriorityMap: { [key: string]: string } = {
+      'LOW': 'LOW',
+      'MEDIUM': 'MEDIUM',
+      'HIGH': 'HIGH',
+      'URGENT': 'URGENT'
+    };
+
+    const validatedPriority = validPriorityMap[priority] || 'MEDIUM';
+
+    // Create project with validated enum values
     const projectData = {
       name: name.trim(),
       description: description?.trim() || null,
-      status: status || 'PLANNING',
-      priority: priority || 'MEDIUM',
+      status: validatedStatus,
+      priority: validatedPriority,
       progress: 0
-      // No ownerId needed now
     };
 
     console.log('📝 Prepared project data:', projectData);

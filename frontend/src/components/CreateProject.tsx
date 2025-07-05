@@ -163,9 +163,10 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onProjectCreated, onCance
                 style={inputStyle}
               >
                 <option value="PLANNING">Planning</option>
-                <option value="ACTIVE">Active</option>
+                <option value="IN_PROGRESS">In Progress</option>
                 <option value="ON_HOLD">On Hold</option>
                 <option value="COMPLETED">Completed</option>
+                <option value="CANCELLED">Cancelled</option>
               </select>
             </div>
 

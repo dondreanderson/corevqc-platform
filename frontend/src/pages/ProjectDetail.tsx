@@ -39,6 +39,8 @@ interface ActivityItem {
   type: string;
   description: string;
   timestamp: string;
+  date?: string | null; // Made optional and nullable
+  title?: string;
   user: string;
 }
 
@@ -89,89 +91,63 @@ const ProjectDetails: React.FC = () => {
       const projectData = await projectResponse.json();
       setProject(projectData);
 
-      // Fetch additional data (these endpoints need to be implemented)
-      const [statsResponse, activitiesResponse, teamResponse, filesResponse] = await Promise.allSettled([
-        fetch(`${process.env.REACT_APP_API_URL}/api/projects/${id}/stats`),
-        fetch(`${process.env.REACT_APP_API_URL}/api/projects/${id}/activities`),
-        fetch(`${process.env.REACT_APP_API_URL}/api/projects/${id}/team`),
-        fetch(`${process.env.REACT_APP_API_URL}/api/projects/${id}/files`)
+      // Mock data for stats
+      setStats({
+        totalTasks: 24,
+        completedTasks: 12,
+        activeTasks: 8,
+        overdueTasks: 4,
+        totalNCRs: 5,
+        openNCRs: 2,
+        totalInspections: 15,
+        passedInspections: 12
+      });
+
+      // Mock data for activities with proper date handling
+      setActivities([
+        {
+          id: '1',
+          type: 'inspection',
+          description: 'Foundation inspection completed',
+          timestamp: '2025-01-05T10:30:00Z',
+          date: '2025-01-05T10:30:00Z',
+          title: 'Foundation Inspection',
+          user: 'John Smith'
+        },
+        {
+          id: '2',
+          type: 'ncr',
+          description: 'NCR-001 reported for concrete quality',
+          timestamp: '2025-01-04T14:15:00Z',
+          date: '2025-01-04T14:15:00Z',
+          title: 'Quality Issue NCR',
+          user: 'Sarah Johnson'
+        },
+        {
+          id: '3',
+          type: 'document',
+          description: 'Updated project blueprints uploaded',
+          timestamp: '2025-01-03T09:45:00Z',
+          date: '2025-01-03T09:45:00Z',
+          title: 'Blueprint Update',
+          user: 'Mike Davis'
+        }
       ]);
 
-      // Handle stats
-      if (statsResponse.status === 'fulfilled' && statsResponse.value.ok) {
-        const statsData = await statsResponse.value.json();
-        setStats(statsData);
-      } else {
-        // Mock data for now
-        setStats({
-          totalTasks: 24,
-          completedTasks: 12,
-          activeTasks: 8,
-          overdueTasks: 4,
-          totalNCRs: 5,
-          openNCRs: 2,
-          totalInspections: 15,
-          passedInspections: 12
-        });
-      }
+      // Mock data for team members
+      setTeamMembers([
+        { id: '1', name: 'John Smith', role: 'Project Manager' },
+        { id: '2', name: 'Sarah Johnson', role: 'Quality Inspector' },
+        { id: '3', name: 'Mike Davis', role: 'Site Engineer' },
+        { id: '4', name: 'Lisa Chen', role: 'Safety Officer' }
+      ]);
 
-      // Handle activities
-      if (activitiesResponse.status === 'fulfilled' && activitiesResponse.value.ok) {
-        const activitiesData = await activitiesResponse.value.json();
-        setActivities(activitiesData);
-      } else {
-        // Mock data for now
-        setActivities([
-          {
-            id: '1',
-            type: 'inspection',
-            description: 'Foundation inspection completed',
-            timestamp: '2025-01-05T10:30:00Z',
-            user: 'John Smith'
-          },
-          {
-            id: '2',
-            type: 'ncr',
-            description: 'NCR-001 reported for concrete quality',
-            timestamp: '2025-01-04T14:15:00Z',
-            user: 'Sarah Johnson'
-          },
-          {
-            id: '3',
-            type: 'document',
-            description: 'Updated project blueprints uploaded',
-            timestamp: '2025-01-03T09:45:00Z',
-            user: 'Mike Davis'
-          }
-        ]);
-      }
-
-      // Handle team members
-      if (teamResponse.status === 'fulfilled' && teamResponse.value.ok) {
-        const teamData = await teamResponse.value.json();
-        setTeamMembers(teamData);
-      } else {
-        // Mock data for now
-        setTeamMembers([
-          { id: '1', name: 'John Smith', role: 'Project Manager' },
-          { id: '2', name: 'Sarah Johnson', role: 'Quality Inspector' },
-          { id: '3', name: 'Mike Davis', role: 'Site Engineer' },
-          { id: '4', name: 'Lisa Chen', role: 'Safety Officer' }
-        ]);
-      }
-
-      // Handle files
-      if (filesResponse.status === 'fulfilled' && filesResponse.value.ok) {
-        const filesData = await filesResponse.value.json();
-        setFiles(filesData);
-      } else {
-        // Mock data for now
-        setFiles([
-          { id: '1', name: 'Project_Blueprint_v2.pdf', type: 'PDF', size: '2.4 MB', uploadedAt: '2025-01-03T09:45:00Z', uploadedBy: 'Mike Davis' },
-          { id: '2', name: 'Safety_Report_Q1.docx', type: 'Word', size: '1.2 MB', uploadedAt: '2025-01-02T16:20:00Z', uploadedBy: 'Lisa Chen' },
-          { id: '3', name: 'Quality_Checklist.xlsx', type: 'Excel', size: '890 KB', uploadedAt: '2025-01-01T11:10:00Z', uploadedBy: 'Sarah Johnson' }
-        ]);
-      }
+      // Mock data for files
+      setFiles([
+        { id: '1', name: 'Project_Blueprint_v2.pdf', type: 'PDF', size: '2.4 MB', uploadedAt: '2025-01-03T09:45:00Z', uploadedBy: 'Mike Davis' },
+        { id: '2', name: 'Safety_Report_Q1.docx', type: 'Word', size: '1.2 MB', uploadedAt: '2025-01-02T16:20:00Z', uploadedBy: 'Lisa Chen' },
+        { id: '3', name: 'Quality_Checklist.xlsx', type: 'Excel', size: '890 KB', uploadedAt: '2025-01-01T11:10:00Z', uploadedBy: 'Sarah Johnson' }
+      ]);
 
     } catch (err) {
       console.error('Error fetching project details:', err);
@@ -181,22 +157,34 @@ const ProjectDetails: React.FC = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+  const formatDate = (dateString: string | null | undefined): string => {
+    if (!dateString) return 'No date available';
+    
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return 'Invalid date';
+    }
   };
 
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const formatDateTime = (dateString: string | null | undefined): string => {
+    if (!dateString) return 'No date available';
+    
+    try {
+      return new Date(dateString).toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return 'Invalid date';
+    }
   };
 
   const getBadgeClass = (status: string, type: 'status' | 'priority') => {
@@ -351,13 +339,13 @@ const ProjectDetails: React.FC = () => {
                 <div className="project-details-info-item">
                   <div className="project-details-info-label">Start Date</div>
                   <div className="project-details-info-value">
-                    {project.startDate ? formatDate(project.startDate) : 'Not set'}
+                    {formatDate(project.startDate)}
                   </div>
                 </div>
                 <div className="project-details-info-item">
                   <div className="project-details-info-label">End Date</div>
                   <div className="project-details-info-value">
-                    {project.endDate ? formatDate(project.endDate) : 'Not set'}
+                    {formatDate(project.endDate)}
                   </div>
                 </div>
                 <div className="project-details-info-item">
@@ -374,10 +362,15 @@ const ProjectDetails: React.FC = () => {
                 {activities.map((activity) => (
                   <div key={activity.id} className="project-details-timeline-item">
                     <div className="project-details-timeline-date">
-                      {formatDateTime(activity.timestamp)}
+                      {formatDateTime(activity.date || activity.timestamp)}
                     </div>
                     <div className="project-details-timeline-content">
-                      {activity.description}
+                      {activity.title && (
+                        <div className="timeline-event-header">
+                          <h4 className="event-title">{activity.title}</h4>
+                        </div>
+                      )}
+                      <p className="event-description">{activity.description}</p>
                       <div className="project-details-text-muted">by {activity.user}</div>
                     </div>
                   </div>
