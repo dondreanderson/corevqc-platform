@@ -10,14 +10,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onProjectCreated, onCance
     name: '',
     description: '',
     status: 'PLANNING',
-    priority: 'MEDIUM',
-    budget: '',
-    clientName: '',
-    clientContact: '',
-    projectType: '',
-    startDate: '',
-    endDate: '',
-    location: ''
+    priority: 'MEDIUM'
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,6 +30,9 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onProjectCreated, onCance
     setError(null);
 
     try {
+      console.log('Submitting project:', formData);
+      console.log('API URL:', process.env.REACT_APP_API_URL);
+
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/projects`, {
         method: 'POST',
         headers: {
@@ -45,7 +41,11 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onProjectCreated, onCance
         body: JSON.stringify(formData),
       });
 
+      console.log('Response status:', response.status);
+
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Response error:', errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -57,14 +57,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onProjectCreated, onCance
         name: '',
         description: '',
         status: 'PLANNING',
-        priority: 'MEDIUM',
-        budget: '',
-        clientName: '',
-        clientContact: '',
-        projectType: '',
-        startDate: '',
-        endDate: '',
-        location: ''
+        priority: 'MEDIUM'
       });
 
       onProjectCreated();
@@ -76,51 +69,98 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onProjectCreated, onCance
     }
   };
 
+  const modalStyle: React.CSSProperties = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0, 0, 0, 0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000
+  };
+
+  const formStyle: React.CSSProperties = {
+    background: 'white',
+    borderRadius: '12px',
+    padding: '30px',
+    maxWidth: '500px',
+    width: '90%',
+    maxHeight: '80vh',
+    overflow: 'auto'
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '10px',
+    border: '1px solid #d1d5db',
+    borderRadius: '6px',
+    fontSize: '14px',
+    marginTop: '6px',
+    marginBottom: '16px'
+  };
+
+  const buttonStyle: React.CSSProperties = {
+    padding: '10px 20px',
+    borderRadius: '6px',
+    border: 'none',
+    cursor: 'pointer',
+    marginLeft: '10px'
+  };
+
   return (
-    <div className="create-project-container">
-      <div className="create-project-modal">
-        <h2>Create New Project</h2>
+    <div style={modalStyle}>
+      <div style={formStyle}>
+        <h2 style={{ marginBottom: '20px', color: '#1f2937' }}>Create New Project</h2>
         
         {error && (
-          <div className="error-message">
+          <div style={{ 
+            backgroundColor: '#fee2e2', 
+            color: '#dc2626', 
+            padding: '12px', 
+            borderRadius: '6px', 
+            marginBottom: '16px' 
+          }}>
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="create-project-form">
-          <div className="form-group">
-            <label htmlFor="name">Project Name *</label>
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label style={{ fontWeight: '500', color: '#374151' }}>Project Name *</label>
             <input
               type="text"
-              id="name"
               name="name"
               value={formData.name}
               onChange={handleChange}
               required
               placeholder="Enter project name"
+              style={inputStyle}
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="description">Description</label>
+          <div>
+            <label style={{ fontWeight: '500', color: '#374151' }}>Description</label>
             <textarea
-              id="description"
               name="description"
               value={formData.description}
               onChange={handleChange}
               placeholder="Project description"
               rows={3}
+              style={{...inputStyle, resize: 'vertical'}}
             />
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="status">Status</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div>
+              <label style={{ fontWeight: '500', color: '#374151' }}>Status</label>
               <select
-                id="status"
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
+                style={inputStyle}
               >
                 <option value="PLANNING">Planning</option>
                 <option value="ACTIVE">Active</option>
@@ -129,13 +169,13 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onProjectCreated, onCance
               </select>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="priority">Priority</label>
+            <div>
+              <label style={{ fontWeight: '500', color: '#374151' }}>Priority</label>
               <select
-                id="priority"
                 name="priority"
                 value={formData.priority}
                 onChange={handleChange}
+                style={inputStyle}
               >
                 <option value="LOW">Low</option>
                 <option value="MEDIUM">Medium</option>
@@ -145,105 +185,26 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onProjectCreated, onCance
             </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="budget">Budget</label>
-            <input
-              type="number"
-              id="budget"
-              name="budget"
-              value={formData.budget}
-              onChange={handleChange}
-              placeholder="Project budget"
-              step="0.01"
-            />
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="clientName">Client Name</label>
-              <input
-                type="text"
-                id="clientName"
-                name="clientName"
-                value={formData.clientName}
-                onChange={handleChange}
-                placeholder="Client name"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="clientContact">Client Contact</label>
-              <input
-                type="text"
-                id="clientContact"
-                name="clientContact"
-                value={formData.clientContact}
-                onChange={handleChange}
-                placeholder="Phone or email"
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="projectType">Project Type</label>
-            <input
-              type="text"
-              id="projectType"
-              name="projectType"
-              value={formData.projectType}
-              onChange={handleChange}
-              placeholder="e.g., Residential, Commercial, Industrial"
-            />
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="startDate">Start Date</label>
-              <input
-                type="date"
-                id="startDate"
-                name="startDate"
-                value={formData.startDate}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="endDate">End Date</label>
-              <input
-                type="date"
-                id="endDate"
-                name="endDate"
-                value={formData.endDate}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="location">Location</label>
-            <input
-              type="text"
-              id="location"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              placeholder="Project location"
-            />
-          </div>
-
-          <div className="form-buttons">
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
             <button 
               type="button" 
               onClick={onCancel}
-              className="btn-cancel"
+              style={{
+                ...buttonStyle,
+                backgroundColor: '#6b7280',
+                color: 'white'
+              }}
               disabled={isSubmitting}
             >
               Cancel
             </button>
             <button 
               type="submit" 
-              className="btn-submit"
+              style={{
+                ...buttonStyle,
+                backgroundColor: isSubmitting ? '#9ca3af' : '#3b82f6',
+                color: 'white'
+              }}
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Creating...' : 'Create Project'}
