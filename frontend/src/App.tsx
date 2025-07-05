@@ -7,7 +7,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 
 // Components
 import MobileNavigation from './components/MobileNavigation';
-import QualityControlDashboard from './pages/QualityControlDashboard';
+import EnhancedQualityControlDashboard from './pages/EnhancedQualityControlDashboard';
 
 // Import your pages
 import Dashboard from './pages/Dashboard';
@@ -36,8 +36,8 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/projects" element={<Projects />} />
               <Route path="/projects/:id" element={<ProjectDetails />} />
-              <Route path="/quality" element={<QualityControlDashboard />} />
-              
+              <Route path="/quality" element={<EnhancedQualityControlDashboard />} />
+
               {/* Catch all route */}
               <Route path="*" element={<Navigate to="/projects" replace />} />
             </Routes>

@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NCR List Management - CoreVQC</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .status-open {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .status-in-progress {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .status-resolved {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .status-closed {
+            background-color: rgba(156, 163, 175, 0.1);
+            color: #6b7280;
+            border: 1px solid rgba(156, 163, 175, 0.3);
+        }
+        
+        .severity-critical {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        
+        .severity-high {
+            background-color: rgba(251, 191, 36, 0.1);
+            color: #f59e0b;
+        }
+        
+        .severity-medium {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        
+        .severity-low {
+            background-color: rgba(156, 163, 175, 0.1);
+            color: #6b7280;
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .list-view .ncr-card {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .list-view .ncr-card:last-child {
+            border-bottom: none;
+        }
+        
+        .grid-view .ncr-card {
+            display: block;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <div class="gradient-bg text-white py-6">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <nav class="flex items-center space-x-2 text-sm mb-4 opacity-90">
+                        <a href="#" class="hover:underline">Dashboard</a>
+                        <span>/</span>
+                        <a href="#" class="hover:underline">Quality Control</a>
+                        <span>/</span>
+                        <span>NCR Management</span>
+                    </nav>
+                    <h1 class="text-3xl font-bold mb-2">NCR Management</h1>
+                    <p class="text-lg opacity-90">Non-Conformance Reports & Quality Issues</p>
+                </div>
+                <button onclick="openCreateNCRModal()" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 flex items-center space-x-2">
+                    <i class="fas fa-plus"></i>
+                    <span>Create NCR</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Filters and Search -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-6">
+                <!-- Search Bar -->
+                <div class="flex-1 max-w-md">
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="Search NCRs..." 
+                               class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <i class="fas fa-search absolute left-3 top-4 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <!-- Filters -->
+                <div class="flex flex-wrap gap-4">
+                    <select id="statusFilter" class="border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All Status</option>
+                        <option value="OPEN">Open</option>
+                        <option value="IN_PROGRESS">In Progress</option>
+                        <option value="RESOLVED">Resolved</option>
+                        <option value="CLOSED">Closed</option>
+                    </select>
+                    
+                    <select id="severityFilter" class="border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All Severity</option>
+                        <option value="CRITICAL">Critical</option>
+                        <option value="HIGH">High</option>
+                        <option value="MEDIUM">Medium</option>
+                        <option value="LOW">Low</option>
+                    </select>
+                    
+                    <select id="categoryFilter" class="border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All Categories</option>
+                        <option value="Quality">Quality</option>
+                        <option value="Safety">Safety</option>
+                        <option value="Process">Process</option>
+                        <option value="Material">Material</option>
+                        <option value="Environmental">Environmental</option>
+                        <option value="Documentation">Documentation</option>
+                    </select>
+                    
+                    <button onclick="clearFilters()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-lg transition duration-200">
+                        <i class="fas fa-times mr-2"></i>Clear
+                    </button>
+                </div>
+            </div>
+            
+            <!-- View Controls -->
+            <div class="flex items-center justify-between mt-6 pt-6 border-t border-gray-200">
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-600">Sort by:</span>
+                    <select id="sortBy" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="priority">Priority</option>
+                        <option value="status">Status</option>
+                        <option value="dueDate">Due Date</option>
+                    </select>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-600" id="resultsCount">Showing 12 of 24 NCRs</span>
+                    <div class="flex bg-gray-100 rounded-lg p-1">
+                        <button onclick="setViewMode('grid')" id="gridViewBtn" class="px-3 py-2 rounded-md text-sm font-medium transition duration-200">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button onclick="setViewMode('list')" id="listViewBtn" class="px-3 py-2 rounded-md text-sm font-medium transition duration-200">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NCR List Container -->
+        <div id="ncrContainer" class="grid-view">
+            <div id="ncrList" class="space-y-4">
+                <!-- NCR items will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex items-center justify-between mt-8">
+            <button id="prevPage" class="bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300 transition duration-200">
+                <i class="fas fa-chevron-left mr-2"></i>Previous
+            </button>
+            <div class="flex space-x-2" id="pagination">
+                <!-- Pagination buttons will be inserted here -->
+            </div>
+            <button id="nextPage" class="bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300 transition duration-200">
+                Next<i class="fas fa-chevron-right ml-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Create NCR Modal -->
+    <div id="createNCRModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-90vh overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">Create New NCR</h2>
+                <button onclick="closeCreateNCRModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="createNCRForm" onsubmit="createNCR(event)">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">NCR Title *</label>
+                        <input type="text" name="title" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                        <select name="category" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select Category</option>
+                            <option value="Quality">Quality</option>
+                            <option value="Safety">Safety</option>
+                            <option value="Process">Process</option>
+                            <option value="Material">Material</option>
+                            <option value="Environmental">Environmental</option>
+                            <option value="Documentation">Documentation</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Severity *</label>
+                        <select name="severity" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select Severity</option>
+                            <option value="LOW">Low</option>
+                            <option value="MEDIUM">Medium</option>
+                            <option value="HIGH">High</option>
+                            <option value="CRITICAL">Critical</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                        <input type="text" name="location" placeholder="e.g., Building A, Floor 3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                    <textarea name="description" required rows="4" placeholder="Detailed description of the non-conformance..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                </div>
+                
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
+                    <input type="date" name="dueDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <div class="flex items-center justify-end space-x-4 mt-8">
+                    <button type="button" onclick="closeCreateNCRModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium py-2 px-6 rounded-lg transition duration-200">
+                        Cancel
+                    </button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition duration-200">
+                        Create NCR
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Sample NCR data
+        let ncrData = [
+            {
+                id: 'NCR-001',
+                ncrNumber: 'NCR-001',
+                title: 'Concrete strength test failure',
+                description: 'Concrete strength test results below specification requirements for foundation section A-3.',
+                severity: 'HIGH',
+                status: 'OPEN',
+                category: 'Quality',
+                location: 'Foundation Block A-3',
+                reportedBy: 'John Smith',
+                reportedDate: '2025-01-05',
+                dueDate: '2025-01-10',
+                createdAt: '2025-01-05T10:30:00Z'
+            },
+            {
+                id: 'NCR-002',
+                ncrNumber: 'NCR-002',
+                title: 'Welding defect in structural beam',
+                description: 'Incomplete penetration welding detected in structural beam connection at grid line B-5.',
+                severity: 'CRITICAL',
+                status: 'IN_PROGRESS',
+                category: 'Quality',
+                location: 'Grid Line B-5',
+                reportedBy: 'Sarah Johnson',
+                reportedDate: '2025-01-04',
+                dueDate: '2025-01-06',
+                createdAt: '2025-01-04T14:15:00Z'
+            },
+            {
+                id: 'NCR-003',
+                ncrNumber: 'NCR-003',
+                title: 'Improper rebar spacing',
+                description: 'Rebar spacing does not meet design specifications in slab area C-2.',
+                severity: 'MEDIUM',
+                status: 'RESOLVED',
+                category: 'Quality',
+                location: 'Slab Area C-2',
+                reportedBy: 'Mike Davis',
+                reportedDate: '2025-01-03',
+                dueDate: '2025-01-08',
+                createdAt: '2025-01-03T09:20:00Z'
+            },
+            {
+                id: 'NCR-004',
+                ncrNumber: 'NCR-004',
+                title: 'Missing safety barriers',
+                description: 'Safety barriers not installed at edge protection points on level 5.',
+                severity: 'HIGH',
+                status: 'OPEN',
+                category: 'Safety',
+                location: 'Level 5 Edge Protection',
+                reportedBy: 'Lisa Chen',
+                reportedDate: '2025-01-02',
+                dueDate: '2025-01-05',
+                createdAt: '2025-01-02T16:45:00Z'
+            },
+            {
+                id: 'NCR-005',
+                ncrNumber: 'NCR-005',
+                title: 'Material delivery documentation missing',
+                description: 'Delivery certificates and test reports missing for steel shipment batch ST-200.',
+                severity: 'MEDIUM',
+                status: 'CLOSED',
+                category: 'Documentation',
+                location: 'Materials Storage Area',
+                reportedBy: 'Tom Wilson',
+                reportedDate: '2025-01-01',
+                dueDate: '2025-01-07',
+                createdAt: '2025-01-01T11:10:00Z'
+            },
+            {
+                id: 'NCR-006',
+                ncrNumber: 'NCR-006',
+                title: 'Environmental compliance issue',
+                description: 'Dust control measures not implemented during concrete cutting operations.',
+                severity: 'LOW',
+                status: 'IN_PROGRESS',
+                category: 'Environmental',
+                location: 'Cutting Area D-1',
+                reportedBy: 'Anna Rodriguez',
+                reportedDate: '2025-01-06',
+                dueDate: '2025-01-12',
+                createdAt: '2025-01-06T08:30:00Z'
+            }
+        ];
+
+        let filteredData = [...ncrData];
+        let currentViewMode = 'grid';
+        let currentPage = 1;
+        const itemsPerPage = 6;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            setViewMode('grid');
+            renderNCRList();
+            updateResultsCount();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', filterNCRs);
+            document.getElementById('statusFilter').addEventListener('change', filterNCRs);
+            document.getElementById('severityFilter').addEventListener('change', filterNCRs);
+            document.getElementById('categoryFilter').addEventListener('change', filterNCRs);
+            document.getElementById('sortBy').addEventListener('change', sortAndRenderNCRs);
+        }
+
+        function filterNCRs() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const severityFilter = document.getElementById('severityFilter').value;
+            const categoryFilter = document.getElementById('categoryFilter').value;
+
+            filteredData = ncrData.filter(ncr => {
+                const matchesSearch = ncr.title.toLowerCase().includes(searchTerm) ||
+                                    ncr.description.toLowerCase().includes(searchTerm) ||
+                                    ncr.ncrNumber.toLowerCase().includes(searchTerm) ||
+                                    ncr.location.toLowerCase().includes(searchTerm);
+
+                const matchesStatus = !statusFilter || ncr.status === statusFilter;
+                const matchesSeverity = !severityFilter || ncr.severity === severityFilter;
+                const matchesCategory = !categoryFilter || ncr.category === categoryFilter;
+
+                return matchesSearch && matchesStatus && matchesSeverity && matchesCategory;
+            });
+
+            currentPage = 1;
+            sortAndRenderNCRs();
+            updateResultsCount();
+        }
+
+        function sortAndRenderNCRs() {
+            const sortBy = document.getElementById('sortBy').value;
+
+            filteredData.sort((a, b) => {
+                switch (sortBy) {
+                    case 'newest':
+                        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                    case 'oldest':
+                        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                    case 'priority':
+                        const severityOrder = { 'CRITICAL': 4, 'HIGH': 3, 'MEDIUM': 2, 'LOW': 1 };
+                        return severityOrder[b.severity] - severityOrder[a.severity];
+                    case 'status':
+                        return a.status.localeCompare(b.status);
+                    case 'dueDate':
+                        if (!a.dueDate && !b.dueDate) return 0;
+                        if (!a.dueDate) return 1;
+                        if (!b.dueDate) return -1;
+                        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+                    default:
+                        return 0;
+                }
+            });
+
+            renderNCRList();
+        }
+
+        function renderNCRList() {
+            const container = document.getElementById('ncrList');
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = filteredData.slice(startIndex, endIndex);
+
+            if (pageData.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-lg p-12 text-center">
+                        <i class="fas fa-search text-4xl text-gray-400 mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No NCRs found</h3>
+                        <p class="text-gray-500">Try adjusting your search criteria or filters</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = pageData.map(ncr => `
+                <div class="ncr-card bg-white rounded-lg shadow-sm border border-gray-200 card-hover cursor-pointer" onclick="viewNCRDetails('${ncr.id}')">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-3">
+                                <h3 class="text-lg font-semibold text-gray-900">${ncr.ncrNumber}</h3>
+                                <span class="status-badge status-${ncr.status.toLowerCase().replace('_', '-')}">${ncr.status.replace('_', ' ')}</span>
+                                <span class="status-badge severity-${ncr.severity.toLowerCase()}">${ncr.severity}</span>
+                            </div>
+                            <h4 class="text-md font-medium text-gray-800 mb-2">${ncr.title}</h4>
+                            <p class="text-gray-600 mb-3 line-clamp-2">${ncr.description}</p>
+                            <div class="flex items-center space-x-6 text-sm text-gray-500">
+                                <span><i class="fas fa-map-marker-alt mr-1"></i> ${ncr.location}</span>
+                                <span><i class="fas fa-user mr-1"></i> ${ncr.reportedBy}</span>
+                                <span><i class="fas fa-calendar mr-1"></i> ${formatDate(ncr.reportedDate)}</span>
+                                ${ncr.dueDate ? `<span class="text-orange-600"><i class="fas fa-clock mr-1"></i> Due: ${formatDate(ncr.dueDate)}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2 ml-4">
+                            <button onclick="editNCR('${ncr.id}'); event.stopPropagation();" class="text-blue-600 hover:text-blue-800 p-2">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteNCR('${ncr.id}'); event.stopPropagation();" class="text-red-600 hover:text-red-800 p-2">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setViewMode(mode) {
+            currentViewMode = mode;
+            const container = document.getElementById('ncrContainer');
+            const gridBtn = document.getElementById('gridViewBtn');
+            const listBtn = document.getElementById('listViewBtn');
+
+            container.className = mode + '-view';
+
+            if (mode === 'grid') {
+                gridBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+                gridBtn.classList.remove('text-gray-500');
+                listBtn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+                listBtn.classList.add('text-gray-500');
+            } else {
+                listBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+                listBtn.classList.remove('text-gray-500');
+                gridBtn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+                gridBtn.classList.add('text-gray-500');
+            }
+
+            renderNCRList();
+        }
+
+        function updateResultsCount() {
+            const total = ncrData.length;
+            const filtered = filteredData.length;
+            const startIndex = (currentPage - 1) * itemsPerPage + 1;
+            const endIndex = Math.min(currentPage * itemsPerPage, filtered);
+
+            document.getElementById('resultsCount').textContent = 
+                `Showing ${startIndex}-${endIndex} of ${filtered} NCRs`;
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('severityFilter').value = '';
+            document.getElementById('categoryFilter').value = '';
+            filterNCRs();
+        }
+
+        function openCreateNCRModal() {
+            document.getElementById('createNCRModal').classList.remove('hidden');
+        }
+
+        function closeCreateNCRModal() {
+            document.getElementById('createNCRModal').classList.add('hidden');
+            document.getElementById('createNCRForm').reset();
+        }
+
+        function createNCR(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const newNCR = {
+                id: 'NCR-' + String(ncrData.length + 1).padStart(3, '0'),
+                ncrNumber: 'NCR-' + String(ncrData.length + 1).padStart(3, '0'),
+                title: formData.get('title'),
+                description: formData.get('description'),
+                severity: formData.get('severity'),
+                status: 'OPEN',
+                category: formData.get('category'),
+                location: formData.get('location') || 'Not specified',
+                reportedBy: 'Current User',
+                reportedDate: new Date().toISOString().split('T')[0],
+                dueDate: formData.get('dueDate') || null,
+                createdAt: new Date().toISOString()
+            };
+
+            ncrData.unshift(newNCR);
+            filterNCRs();
+            closeCreateNCRModal();
+            
+            // Show success message
+            alert('NCR created successfully!');
+        }
+
+        function viewNCRDetails(id) {
+            alert(`View details for ${id} - This would open a detailed view modal`);
+        }
+
+        function editNCR(id) {
+            alert(`Edit ${id} - This would open an edit modal`);
+        }
+
+        function deleteNCR(id) {
+            if (confirm('Are you sure you want to delete this NCR?')) {
+                ncrData = ncrData.filter(ncr => ncr.id !== id);
+                filterNCRs();
+                alert('NCR deleted successfully!');
+            }
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('createNCRModal');
+            if (event.target === modal) {
+                closeCreateNCRModal();
+            }
+        });
+    </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"95a954355835a3ba","serverTiming":{"name":{"cfExtPri":true,"cfEdge":true,"cfOrigin":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}},"version":"2025.6.2","token":"4edd5f8ec12a48cfa682ab8261b80a79"}' crossorigin="anonymous"></script>
+</body>
+</html>
+    <script id="html_badge_script1">
+        window.__genspark_remove_badge_link = "https://www.genspark.ai/api/html_badge/" +
+            "remove_badge?token=To%2FBnjzloZ3UfQdcSaYfDtFrrvLF08orYqcKP79qEuap3kAZsbBNMeQrstaPQjQW1MJhUy14JAKyNchv%2Bq%2F2LYCLJjJQJ0hFrzA7K2P%2FMOos5MuMXNLhuyw%2FQGA%2F7buOL3J4G84zopeSoH0fhTIZUAEUFCrTzHm9FHaflDFdcLDjzH64Ahzrmx%2Fv1flc3PGv%2FqXJwUnDQTAnsAhd1%2FGOqhDFj0%2BCrYE5%2F0w6dfBd%2Fn8zj04H3XZwd8gMArg61w6B0KwgnkLtJhzUaKsNmQeossLUiR0sU7LyXFkILaGDwQn5pDuxzSW8Z%2BYlcAdMHRUGe%2BAKsKK9hU4smFcKB2YMLjedprPAn0wSdxWJbIiN0hacoCbIcb6TfHdw8OW1fvg0h0AES2WgzT%2FRmQxD3wG%2F2eTcOnNPYSQZ7zd6KTIRTgiM3fPEU98aTIzjum%2FJHYNoS7JfQLvuSUyTHLzlSjlOjpD5ie3OC35hGcZUlhWM8co5SLNb7GiUP%2BPjsTecVfaIU6A0Epjy%2F%2FUioLMf%2BUKdw64tOQBfC3Fye1OZwGb%2FO0LPjlrtzFlJAXf8%2B0BxxH7P";
+        window.__genspark_locale = "en-US";
+        window.__genspark_token = "To/BnjzloZ3UfQdcSaYfDtFrrvLF08orYqcKP79qEuap3kAZsbBNMeQrstaPQjQW1MJhUy14JAKyNchv+q/2LYCLJjJQJ0hFrzA7K2P/MOos5MuMXNLhuyw/QGA/7buOL3J4G84zopeSoH0fhTIZUAEUFCrTzHm9FHaflDFdcLDjzH64Ahzrmx/v1flc3PGv/qXJwUnDQTAnsAhd1/GOqhDFj0+CrYE5/0w6dfBd/n8zj04H3XZwd8gMArg61w6B0KwgnkLtJhzUaKsNmQeossLUiR0sU7LyXFkILaGDwQn5pDuxzSW8Z+YlcAdMHRUGe+AKsKK9hU4smFcKB2YMLjedprPAn0wSdxWJbIiN0hacoCbIcb6TfHdw8OW1fvg0h0AES2WgzT/RmQxD3wG/2eTcOnNPYSQZ7zd6KTIRTgiM3fPEU98aTIzjum/JHYNoS7JfQLvuSUyTHLzlSjlOjpD5ie3OC35hGcZUlhWM8co5SLNb7GiUP+PjsTecVfaIU6A0Epjy//UioLMf+UKdw64tOQBfC3Fye1OZwGb/O0LPjlrtzFlJAXf8+0BxxH7P";
+    </script>
+    
+    <script id="html_notice_dialog_script" src="https://www.genspark.ai/notice_dialog.js"></script>
+    

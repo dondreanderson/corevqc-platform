@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
+import ncrRoutes from './ncr-api-routes';
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -40,6 +41,8 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+app.use('/api/ncrs', ncrRoutes);
 
 // Health check endpoints
 app.get('/health', (req, res) => {
