@@ -80,7 +80,7 @@ app.get('/api/projects', async (req, res) => {
   }
 });
 
-// POST projects endpoint - SIMPLIFIED VERSION FOR ORGANIZATION
+// POST projects endpoint - HANDLE ALL REQUIRED FIELDS
 app.post('/api/projects', async (req, res) => {
   try {
     console.log('🔍 Creating new project - received data:', req.body);
@@ -93,19 +93,19 @@ app.post('/api/projects', async (req, res) => {
       return res.status(400).json({ error: 'Project name is required' });
     }
 
-    // Clean the data - create project WITHOUT organization for now
+    // Create project with ONLY the basic fields that definitely exist
     const projectData = {
       name: name.trim(),
       description: description?.trim() || null,
       status: status || 'PLANNING',
       priority: priority || 'MEDIUM',
       progress: 0
-      // Remove organization requirement temporarily
+      // Remove ALL relationships for now
     };
 
     console.log('📝 Prepared project data:', projectData);
 
-    // Create the project
+    // Create the project with basic fields only
     const newProject = await prisma.project.create({
       data: projectData
     });
@@ -116,12 +116,18 @@ app.post('/api/projects', async (req, res) => {
   } catch (error) {
     console.error('❌ Error creating project:', error);
     
-    // Send detailed error info
+    // Let's see the exact Prisma error
     if (error instanceof Error) {
+      console.error('❌ Full error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+      
       res.status(500).json({ 
         error: 'Failed to create project', 
         details: error.message,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        errorType: error.name
       });
     } else {
       res.status(500).json({ 
@@ -131,8 +137,6 @@ app.post('/api/projects', async (req, res) => {
     }
   }
 });
-
-
 
 // Stats endpoint
 app.get('/api/stats', async (req, res) => {
