@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import CreateProject from '../components/CreateProject';
 import ProjectCard from '../components/ProjectCard';
 import ProjectFilters from '../components/ProjectFilters';
-import '../styles/Projects.css';
+import '../styles/projects.css';
 
 interface Project {
   id: string;
