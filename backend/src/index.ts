@@ -172,6 +172,40 @@ app.get('/api/stats', async (req, res) => {
   }
 });
 
+app.get('/api/projects/:id', async (req, res) => {
+  try {
+    console.log('🔍 GET Single Project endpoint called with ID:', req.params.id);
+    const { id } = req.params;
+    
+    const project = await prisma.project.findUnique({
+      where: { id },
+      include: {
+        organization: true,
+        owner: true,
+        members: {
+          include: {
+            user: true
+          }
+        }
+      }
+    });
+    
+    if (!project) {
+      console.log('❌ Project not found:', id);
+      return res.status(404).json({ error: 'Project not found' });
+    }
+    
+    console.log('✅ Project found:', project.name);
+    res.json(project);
+  } catch (error) {
+    console.error('❌ Error fetching project:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch project', 
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // Global error handler
 app.use((error: any, req: any, res: any, next: any) => {
   console.error('Global error handler:', error);
