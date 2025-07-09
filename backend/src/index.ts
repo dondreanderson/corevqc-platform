@@ -1,55 +1,17 @@
 import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
-import ncrRoutes from './ncr-api-routes';
 
 const app = express();
 const PORT = process.env.PORT || 8000;
-
-console.log('🚀 Starting COREVQC Backend...');
-console.log('📊 Environment:', process.env.NODE_ENV || 'development');
-console.log('🔗 Database URL:', process.env.DATABASE_URL ? 'Set' : 'Not set');
-
-// Initialize Prisma with error handling
-let prisma: PrismaClient;
-try {
-  prisma = new PrismaClient();
-  console.log('✅ Prisma client initialized');
-} catch (error) {
-  console.error('❌ Failed to initialize Prisma client:', error);
-  process.exit(1);
-}
+const prisma = new PrismaClient();
 
 // Middleware
 app.use(express.json());
+app.use(cors());
 
-// CORS configuration
-app.use(cors({
-  origin: true,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-console.log('✅ Middleware configured');
-
-// Debug logging
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-  if (req.method === 'POST') {
-    console.log('POST Body:', req.body);
-  }
-  next();
-});
-
-app.use('/api/ncrs', ncrRoutes);
-
-// Health check endpoints
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK' });
-});
-
-app.get('/api/health', (req, res) => {
+// Health check
+app.get('/api/health', (_req, res) => {
   res.json({ 
     status: 'OK', 
     message: 'COREVQC Backend is running!', 
@@ -59,179 +21,200 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Test endpoint
-app.get('/api/test', (req, res) => {
-  res.json({
-    message: 'Test route working!',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// GET projects endpoint
-app.get('/api/projects', async (req, res) => {
+// Get all projects
+app.get('/api/projects', async (_req, res) => {
   try {
-    console.log('🔍 GET Projects endpoint called');
-    const projects = await prisma.project.findMany();
-    console.log('📊 Found projects:', projects.length);
+    const projects = await prisma.project.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
     res.json(projects);
   } catch (error) {
-    console.error('❌ Error fetching projects:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch projects', 
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
+    console.error('Error fetching projects:', error);
+    res.status(500).json({ error: 'Failed to fetch projects' });
   }
 });
 
-// POST projects endpoint - FIXED VERSION
+// Create new project
 app.post('/api/projects', async (req, res) => {
   try {
-    console.log('🔍 Creating new project - received data:', req.body);
-    
-    const { name, description, status, priority } = req.body;
+    const { name, description, status, priority, clientName, location } = req.body;
 
-    // Validate required fields
-    if (!name || name.trim() === '') {
-      console.error('❌ Validation failed: name is required');
+    if (!name?.trim()) {
       return res.status(400).json({ error: 'Project name is required' });
     }
 
-    // STATUS VALIDATION - Map frontend values to valid Prisma enum values
-    const validStatusMap: { [key: string]: string } = {
-      'PLANNING': 'PLANNING',
-      'ACTIVE': 'IN_PROGRESS',      // Map ACTIVE to IN_PROGRESS
-      'IN_PROGRESS': 'IN_PROGRESS',
-      'ON_HOLD': 'ON_HOLD',
-      'COMPLETED': 'COMPLETED',
-      'CANCELLED': 'CANCELLED'
-    };
-
-    const validatedStatus = validStatusMap[status] || 'PLANNING';
-
-    // PRIORITY VALIDATION - Map frontend values to valid Prisma enum values
-    const validPriorityMap: { [key: string]: string } = {
-      'LOW': 'LOW',
-      'MEDIUM': 'MEDIUM',
-      'HIGH': 'HIGH',
-      'URGENT': 'URGENT'
-    };
-
-    const validatedPriority = validPriorityMap[priority] || 'MEDIUM';
-
-    // Create project with validated enum values
-    const projectData = {
-      name: name.trim(),
-      description: description?.trim() || null,
-      status: validatedStatus,
-      priority: validatedPriority,
-      progress: 0
-    };
-
-    console.log('📝 Prepared project data:', projectData);
-
-    // Create the project
     const newProject = await prisma.project.create({
-      data: projectData
+      data: {
+        name: name.trim(),
+        description: description?.trim() || null,
+        status: status || 'PLANNING',
+        priority: priority || 'MEDIUM',
+        clientName: clientName?.trim() || null,
+        location: location?.trim() || null,
+        progress: 0
+      }
     });
 
-    console.log('✅ Project created successfully:', newProject);
     res.status(201).json(newProject);
-
   } catch (error) {
-    console.error('❌ Error creating project:', error);
-    
-    if (error instanceof Error) {
-      res.status(500).json({ 
-        error: 'Failed to create project', 
-        details: error.message,
-        errorType: error.name
-      });
-    } else {
-      res.status(500).json({ 
-        error: 'Failed to create project', 
-        details: 'Unknown error occurred'
-      });
-    }
+    console.error('Error creating project:', error);
+    res.status(500).json({ error: 'Failed to create project' });
   }
 });
 
-// Add this to your backend index.ts
-app.get('/api/projects/:id', async (req, res) => {
+// Get all NCRs
+app.get('/api/ncrs', async (req, res) => {
   try {
-    const { id } = req.params;
-    const project = await prisma.project.findUnique({
-      where: { id }
-    });
+    const { projectId } = req.query;
     
+    const where = projectId ? { projectId: projectId as string } : {};
+    
+    const ncrs = await prisma.nCR.findMany({
+      where,
+      include: {
+        project: {
+          select: { id: true, name: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    res.json(ncrs);
+  } catch (error) {
+    console.error('Error fetching NCRs:', error);
+    res.status(500).json({ error: 'Failed to fetch NCRs' });
+  }
+});
+
+// Create new NCR
+app.post('/api/ncrs', async (req, res) => {
+  try {
+    const { title, description, severity, category, location, projectId } = req.body;
+
+    if (!title?.trim()) {
+      return res.status(400).json({ error: 'NCR title is required' });
+    }
+
+    if (!description?.trim()) {
+      return res.status(400).json({ error: 'NCR description is required' });
+    }
+
+    if (!projectId) {
+      return res.status(400).json({ error: 'Project ID is required' });
+    }
+
+    // Check if project exists
+    const project = await prisma.project.findUnique({
+      where: { id: projectId }
+    });
+
     if (!project) {
       return res.status(404).json({ error: 'Project not found' });
     }
-    
-    res.json(project);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch project' });
-  }
-});
 
+    // Generate NCR number
+    const ncrCount = await prisma.nCR.count();
+    const ncrNumber = `NCR-${String(ncrCount + 1).padStart(3, '0')}`;
 
-// Stats endpoint
-app.get('/api/stats', async (req, res) => {
-  try {
-    const organizationCount = await prisma.organization.count();
-    const userCount = await prisma.user.count();
-    const projectCount = await prisma.project.count();
-    
-    res.json({
-      organizations: organizationCount,
-      users: userCount,
-      projects: projectCount,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Database query failed:', error);
-    res.status(500).json({ 
-      error: 'Database connection failed', 
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-});
+    // Create a dummy user for now (we'll add proper auth later)
+    let reportedBy = await prisma.user.findFirst();
+    if (!reportedBy) {
+      reportedBy = await prisma.user.create({
+        data: {
+          email: 'admin@corevqc.com',
+          firstName: 'System',
+          lastName: 'Admin',
+          role: 'ADMIN'
+        }
+      });
+    }
 
-app.get('/api/projects/:id', async (req, res) => {
-  try {
-    console.log('🔍 GET Single Project endpoint called with ID:', req.params.id);
-    const { id } = req.params;
-    
-    const project = await prisma.project.findUnique({
-      where: { id },
+    const newNCR = await prisma.nCR.create({
+      data: {
+        ncrNumber,
+        title: title.trim(),
+        description: description.trim(),
+        severity: severity || 'MEDIUM',
+        status: 'OPEN',
+        category: category || 'Quality',
+        location: location?.trim() || null,
+        projectId,
+        reportedById: reportedBy.id
+      },
       include: {
-        organization: true,
-        owner: true,
-        members: {
-          include: {
-            user: true
-          }
+        project: {
+          select: { id: true, name: true }
         }
       }
     });
-    
-    if (!project) {
-      console.log('❌ Project not found:', id);
-      return res.status(404).json({ error: 'Project not found' });
-    }
-    
-    console.log('✅ Project found:', project.name);
-    res.json(project);
+
+    res.status(201).json(newNCR);
   } catch (error) {
-    console.error('❌ Error fetching project:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch project', 
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
+    console.error('Error creating NCR:', error);
+    res.status(500).json({ error: 'Failed to create NCR' });
   }
 });
 
-// Global error handler
-app.use((error: any, req: any, res: any, next: any) => {
+// Get NCR statistics
+app.get('/api/ncrs/stats', async (req, res) => {
+  try {
+    const { projectId } = req.query;
+    
+    const where = projectId ? { projectId: projectId as string } : {};
+    
+    const [
+      totalNCRs,
+      openNCRs,
+      inProgressNCRs,
+      resolvedNCRs,
+      closedNCRs,
+      criticalNCRs,
+      highNCRs,
+      mediumNCRs,
+      lowNCRs
+    ] = await Promise.all([
+      prisma.nCR.count({ where }),
+      prisma.nCR.count({ where: { ...where, status: 'OPEN' } }),
+      prisma.nCR.count({ where: { ...where, status: 'IN_PROGRESS' } }),
+      prisma.nCR.count({ where: { ...where, status: 'RESOLVED' } }),
+      prisma.nCR.count({ where: { ...where, status: 'CLOSED' } }),
+      prisma.nCR.count({ where: { ...where, severity: 'CRITICAL' } }),
+      prisma.nCR.count({ where: { ...where, severity: 'HIGH' } }),
+      prisma.nCR.count({ where: { ...where, severity: 'MEDIUM' } }),
+      prisma.nCR.count({ where: { ...where, severity: 'LOW' } })
+    ]);
+
+    const resolvedCount = resolvedNCRs + closedNCRs;
+    const qualityScore = totalNCRs > 0 ? Math.round((resolvedCount / totalNCRs) * 100) : 100;
+
+    const stats = {
+      totalNCRs,
+      openNCRs: openNCRs + inProgressNCRs,
+      criticalNCRs,
+      qualityScore,
+      statusDistribution: {
+        OPEN: openNCRs,
+        IN_PROGRESS: inProgressNCRs,
+        RESOLVED: resolvedNCRs,
+        CLOSED: closedNCRs
+      },
+      severityDistribution: {
+        CRITICAL: criticalNCRs,
+        HIGH: highNCRs,
+        MEDIUM: mediumNCRs,
+        LOW: lowNCRs
+      }
+    };
+
+    res.json(stats);
+  } catch (error) {
+    console.error('Error fetching NCR stats:', error);
+    res.status(500).json({ error: 'Failed to fetch NCR statistics' });
+  }
+});
+
+// Global error handler - fix unused parameters
+app.use((error: any, _req: any, res: any, _next: any) => {
   console.error('Global error handler:', error);
   res.status(500).json({
     error: 'Internal server error',
@@ -240,24 +223,11 @@ app.use((error: any, req: any, res: any, next: any) => {
 });
 
 // Start server
-const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log('🚀 COREVQC Backend Server Started');
-  console.log(`📡 Server running on: http://0.0.0.0:${PORT}`);
-  console.log(`💚 Health check: http://0.0.0.0:${PORT}/api/health`);
-  console.log(`🕒 Started at: ${new Date().toLocaleString()}`);
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
 
-// Handle server errors
-server.on('error', (error) => {
-  console.error('❌ Server error:', error);
-  process.exit(1);
-});
-
-// Test database connection
+// Connect to database
 prisma.$connect()
-  .then(() => {
-    console.log('✅ Database connected successfully');
-  })
-  .catch((error) => {
-    console.error('❌ Database connection failed:', error);
-  });
+  .then(() => console.log('✅ Database connected'))
+  .catch(err => console.error('❌ Database error:', err));
