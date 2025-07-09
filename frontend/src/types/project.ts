@@ -1,55 +1,90 @@
-// Base Project Interface
+// frontend/src/types/project.ts
 export interface Project {
   id: string;
   name: string;
-  description: string;
-  status: string;
-  progress: number;
-  startDate: string;
-  endDate: string;
-  budget?: number;
-  location?: string;
-  client?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-// Enhanced Project Interface for UI Components
-export interface EnhancedProject {
-  id: string;
-  title: string;
-  description: string;
+  description?: string;
   status: ProjectStatus;
   priority: ProjectPriority;
-  completion: number;
-  startDate: string;
-  endDate: string;
-  budget: number;
-  spent: number;
-  teamSize: number;
-  owner: string;
-  tags: string[];
-  milestones: Milestone[];
-  risks: Risk[];
-  lastUpdated: string;
+  progress: number;
+  budget?: number;
+  clientName?: string;
+  clientContact?: string;
+  projectType?: string;
+  startDate?: string;
+  endDate?: string;
+  location?: string;
+  createdAt: string;
+  updatedAt: string;
+  organizationId?: string;
+  ownerId?: string;
+  // Relations
+  organization?: Organization;
+  owner?: User;
+  members?: ProjectMember[];
+  ncrs?: any[];
+  itps?: any[];
+  documents?: any[];
+  inspections?: any[];
 }
 
-// Project Status Type
+// FIXED: Match Prisma schema exactly
 export type ProjectStatus = 
-  | 'planning' 
-  | 'in-progress' 
-  | 'on-hold' 
-  | 'completed' 
-  | 'cancelled';
+  | 'PLANNING' 
+  | 'IN_PROGRESS' 
+  | 'ON_HOLD' 
+  | 'COMPLETED' 
+  | 'CANCELLED';
 
-// Project Priority Type
 export type ProjectPriority = 
-  | 'low' 
-  | 'medium' 
-  | 'high' 
-  | 'critical';
+  | 'LOW' 
+  | 'MEDIUM' 
+  | 'HIGH' 
+  | 'URGENT';
 
-// Team Member Interface
+export type UserRole = 
+  | 'ADMIN' 
+  | 'MANAGER' 
+  | 'USER' 
+  | 'VIEWER';
+
+export type ProjectRole = 
+  | 'MANAGER' 
+  | 'SUPERVISOR' 
+  | 'INSPECTOR' 
+  | 'MEMBER';
+
+export interface User {
+  id: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  role: UserRole;
+  isActive: boolean;
+  lastLoginAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  organizationId?: string;
+}
+
+export interface Organization {
+  id: string;
+  name: string;
+  description?: string;
+  logoUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectMember {
+  id: string;
+  role: ProjectRole;
+  joinedAt: string;
+  projectId: string;
+  userId: string;
+  project?: Project;
+  user?: User;
+}
+
 export interface TeamMember {
   id: string;
   name: string;
@@ -62,99 +97,32 @@ export interface TeamMember {
   status?: 'active' | 'inactive' | 'pending';
 }
 
-// Quality Report Interface
-export interface QualityReport {
-  id: string;
-  type: string;
-  title: string;
-  status: string;
-  createdAt: string;
-}
-
-// Milestone Interface
-export interface Milestone {
-  id: string;
-  name: string;
-  description?: string;
-  targetDate: string;
-  actualDate?: string;
-  status: 'not-started' | 'in-progress' | 'completed' | 'delayed';
-  progress: number;
-  assignedTo?: TeamMember[];
-}
-
-// Risk Interface
-export interface Risk {
-  id: string;
-  title: string;
-  description: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  probability: number;
-  impact: number;
-  status: 'open' | 'mitigated' | 'closed';
-  mitigationPlan?: string;
-  assignedTo?: TeamMember;
-}
-
-// Inspection Result Interface
-export interface InspectionResult {
-  id: string;
-  parameter: string;
-  expectedValue: string;
-  actualValue: string;
-  result: 'pass' | 'fail' | 'warning';
-  notes?: string;
-  inspector: TeamMember;
-  timestamp: string;
-}
-
-// Document Interface
-export interface Document {
-  id: string;
-  name: string;
-  fileName: string;
-  type: DocumentType;
-  category: DocumentCategory;
-  size: number;
-  url: string;
-  thumbnailUrl?: string;
-  version: string;
-  uploadedBy: TeamMember;
-  uploadedDate: string;
-  lastModified: string;
-  tags?: string[];
-}
-
 // Document Types
 export type DocumentType = 
-  | 'drawing' 
-  | 'specification' 
-  | 'report' 
-  | 'image' 
-  | 'video' 
-  | 'certificate' 
-  | 'contract';
+  | 'DRAWING' 
+  | 'SPECIFICATION' 
+  | 'CONTRACT' 
+  | 'PHOTO' 
+  | 'REPORT' 
+  | 'PLAN' 
+  | 'PERMIT' 
+  | 'OTHER';
 
-export type DocumentCategory = 
-  | 'architectural' 
-  | 'structural' 
-  | 'mechanical' 
-  | 'electrical' 
-  | 'quality' 
-  | 'safety' 
-  | 'legal' 
-  | 'financial';
-
-// Comment Interface
-export interface Comment {
+export interface ProjectDocument {
   id: string;
-  text: string;
-  author: TeamMember;
-  timestamp: string;
-  attachments?: string[];
+  name: string;
+  filePath: string;
+  fileSize?: number;
+  fileType?: string;
+  documentType: DocumentType;
+  uploadedAt: string;
+  projectId: string;
+  uploadedById: string;
+  project?: Project;
+  uploadedBy?: User;
 }
 
-// API Response Types
+// Form and API Types
 export interface ApiResponse<T> {
   success: boolean;
   data: T;
@@ -170,20 +138,20 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
-// Form State Types
-export interface FormState {
-  isSubmitting: boolean;
-  errors: Record<string, string>;
-  touched: Record<string, boolean>;
+export interface CreateProjectData {
+  name: string;
+  description?: string;
+  status?: ProjectStatus;
+  priority?: ProjectPriority;
+  budget?: number;
+  clientName?: string;
+  clientContact?: string;
+  projectType?: string;
+  startDate?: string;
+  endDate?: string;
+  location?: string;
 }
 
-// Filter State Types
-export interface FilterState {
-  search: string;
-  status: ProjectStatus | 'all';
-  priority: ProjectPriority | 'all';
-  dateRange: {
-    start: string;
-    end: string;
-  } | null;
+export interface UpdateProjectData extends Partial<CreateProjectData> {
+  progress?: number;
 }

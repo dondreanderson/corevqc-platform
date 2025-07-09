@@ -5,19 +5,16 @@ interface NCRFiltersProps {
   setSearchTerm: (term: string) => void;
   statusFilter: string;
   setStatusFilter: (status: string) => void;
-  priorityFilter: string;
-  setPriorityFilter: (priority: string) => void;
+  severityFilter: string;
+  setSeverityFilter: (severity: string) => void;
   categoryFilter: string;
   setCategoryFilter: (category: string) => void;
   sortBy: string;
   setSortBy: (sort: string) => void;
-  dateFrom: string;
-  setDateFrom: (date: string) => void;
-  dateTo: string;
-  setDateTo: (date: string) => void;
+  viewMode: 'grid' | 'list';
+  setViewMode: (mode: 'grid' | 'list') => void;
   totalNCRs: number;
   filteredCount: number;
-  onClearFilters: () => void;
 }
 
 const NCRFilters: React.FC<NCRFiltersProps> = ({
@@ -25,55 +22,48 @@ const NCRFilters: React.FC<NCRFiltersProps> = ({
   setSearchTerm,
   statusFilter,
   setStatusFilter,
-  priorityFilter,
-  setPriorityFilter,
+  severityFilter,
+  setSeverityFilter,
   categoryFilter,
   setCategoryFilter,
   sortBy,
   setSortBy,
-  dateFrom,
-  setDateFrom,
-  dateTo,
-  setDateTo,
+  viewMode,
+  setViewMode,
   totalNCRs,
-  filteredCount,
-  onClearFilters
+  filteredCount
 }) => {
-  return (
-    <div className="ncr-filters">
-      <div className="ncr-filters-header">
-        <h3 className="ncr-filters-title">
-          <svg className="ncr-filters-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z" />
-          </svg>
-          Filters & Search
-        </h3>
-        <div className="ncr-filters-count">
-          {filteredCount} of {totalNCRs} NCRs
-        </div>
-      </div>
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('all');
+    setSeverityFilter('all');
+    setCategoryFilter('all');
+  };
 
-      <div className="ncr-filters-content">
-        {/* Search Input */}
-        <div className="ncr-filter-group">
-          <label className="ncr-filter-label">Search NCRs</label>
-          <div className="ncr-search-input-wrapper">
-            <svg className="ncr-search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  const hasActiveFilters = searchTerm || statusFilter !== 'all' || severityFilter !== 'all' || categoryFilter !== 'all';
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      {/* Search and View Controls */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
+        <div className="flex-1 max-w-md">
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
               type="text"
-              className="ncr-search-input"
-              placeholder="Search by NCR number, title, or description..."
+              placeholder="Search NCRs..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
             {searchTerm && (
               <button
-                className="ncr-search-clear"
                 onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -81,13 +71,46 @@ const NCRFilters: React.FC<NCRFiltersProps> = ({
           </div>
         </div>
 
-        {/* Status Filter */}
-        <div className="ncr-filter-group">
-          <label className="ncr-filter-label">Status</label>
+        {/* View Mode Toggle */}
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-gray-700">View:</span>
+          <div className="flex bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                viewMode === 'grid'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
           <select
-            className="ncr-filter-select"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="all">All Status</option>
             <option value="OPEN">Open</option>
@@ -97,15 +120,14 @@ const NCRFilters: React.FC<NCRFiltersProps> = ({
           </select>
         </div>
 
-        {/* Priority Filter */}
-        <div className="ncr-filter-group">
-          <label className="ncr-filter-label">Priority</label>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Severity</label>
           <select
-            className="ncr-filter-select"
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
+            value={severityFilter}
+            onChange={(e) => setSeverityFilter(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="all">All Priorities</option>
+            <option value="all">All Severity</option>
             <option value="CRITICAL">Critical</option>
             <option value="HIGH">High</option>
             <option value="MEDIUM">Medium</option>
@@ -113,122 +135,61 @@ const NCRFilters: React.FC<NCRFiltersProps> = ({
           </select>
         </div>
 
-        {/* Category Filter */}
-        <div className="ncr-filter-group">
-          <label className="ncr-filter-label">Category</label>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
           <select
-            className="ncr-filter-select"
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="all">All Categories</option>
-            <option value="Safety">Safety</option>
             <option value="Quality">Quality</option>
+            <option value="Safety">Safety</option>
             <option value="Process">Process</option>
-            <option value="Documentation">Documentation</option>
             <option value="Material">Material</option>
-            <option value="Equipment">Equipment</option>
             <option value="Environmental">Environmental</option>
-            <option value="Other">Other</option>
+            <option value="Documentation">Documentation</option>
+            <option value="Equipment">Equipment</option>
           </select>
         </div>
 
-        {/* Date Range */}
-        <div className="ncr-filter-group">
-          <label className="ncr-filter-label">Date Range</label>
-          <div className="ncr-date-range">
-            <input
-              type="date"
-              className="ncr-date-input"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              placeholder="From"
-            />
-            <span className="ncr-date-separator">to</span>
-            <input
-              type="date"
-              className="ncr-date-input"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              placeholder="To"
-            />
-          </div>
-        </div>
-
-        {/* Sort By */}
-        <div className="ncr-filter-group">
-          <label className="ncr-filter-label">Sort By</label>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
           <select
-            className="ncr-filter-select"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
-            <option value="priority">Priority (High to Low)</option>
-            <option value="status">Status</option>
-            <option value="dueDate">Due Date</option>
-            <option value="ncrNumber">NCR Number</option>
+            <option value="severity">By Severity</option>
+            <option value="status">By Status</option>
+            <option value="dueDate">By Due Date</option>
+            <option value="title">By Title</option>
           </select>
         </div>
 
-        {/* Clear Filters Button */}
-        <div className="ncr-filter-actions">
-          <button
-            className="ncr-clear-filters-btn"
-            onClick={onClearFilters}
-          >
-            <svg className="ncr-btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Clear All Filters
-          </button>
+        <div className="flex items-end">
+          {hasActiveFilters && (
+            <button
+              onClick={clearAllFilters}
+              className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
+      </div>
 
-        {/* Active Filters Display */}
-        {(searchTerm || statusFilter !== 'all' || priorityFilter !== 'all' || 
-          categoryFilter !== 'all' || dateFrom || dateTo) && (
-          <div className="ncr-active-filters">
-            <h4 className="ncr-active-filters-title">Active Filters:</h4>
-            <div className="ncr-active-filters-list">
-              {searchTerm && (
-                <span className="ncr-active-filter">
-                  Search: "{searchTerm}"
-                  <button onClick={() => setSearchTerm('')}>×</button>
-                </span>
-              )}
-              {statusFilter !== 'all' && (
-                <span className="ncr-active-filter">
-                  Status: {statusFilter}
-                  <button onClick={() => setStatusFilter('all')}>×</button>
-                </span>
-              )}
-              {priorityFilter !== 'all' && (
-                <span className="ncr-active-filter">
-                  Priority: {priorityFilter}
-                  <button onClick={() => setPriorityFilter('all')}>×</button>
-                </span>
-              )}
-              {categoryFilter !== 'all' && (
-                <span className="ncr-active-filter">
-                  Category: {categoryFilter}
-                  <button onClick={() => setCategoryFilter('all')}>×</button>
-                </span>
-              )}
-              {dateFrom && (
-                <span className="ncr-active-filter">
-                  From: {dateFrom}
-                  <button onClick={() => setDateFrom('')}>×</button>
-                </span>
-              )}
-              {dateTo && (
-                <span className="ncr-active-filter">
-                  To: {dateTo}
-                  <button onClick={() => setDateTo('')}>×</button>
-                </span>
-              )}
-            </div>
-          </div>
+      {/* Results Summary */}
+      <div className="flex items-center justify-between text-sm text-gray-600">
+        <span>
+          Showing {filteredCount} of {totalNCRs} NCRs
+        </span>
+        {hasActiveFilters && (
+          <span className="text-blue-600">
+            {totalNCRs - filteredCount} filtered out
+          </span>
         )}
       </div>
     </div>

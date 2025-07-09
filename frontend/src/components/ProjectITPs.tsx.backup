@@ -91,7 +91,9 @@ const ProjectITPs: React.FC<ProjectITPsProps> = ({ project }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'status-pending';
+        return 
+    <>
+'status-pending';
       case 'in_progress':
         return 'status-progress';
       case 'completed':
@@ -123,7 +125,7 @@ const ProjectITPs: React.FC<ProjectITPsProps> = ({ project }) => {
         <div className="header-info">
           <h3>Inspection & Test Plans</h3>
           <span className="itp-count">{filteredITPs.length} ITPs</span>
-        </div>
+        </p>
         <button 
           onClick={() => setShowCreateITP(true)}
           className="btn-primary"
@@ -234,7 +236,7 @@ const ProjectITPs: React.FC<ProjectITPsProps> = ({ project }) => {
           <div className="modal-content">
             <h4>Create Inspection & Test Plan</h4>
             <form className="itp-form">
-              <input type="text" placeholder="ITP Title" required />
+              <input type="text" placeholder="ITP Title" required /  />
               <textarea placeholder="Description" rows={3} required></textarea>
               <div className="form-row">
                 <select required>
@@ -254,8 +256,8 @@ const ProjectITPs: React.FC<ProjectITPsProps> = ({ project }) => {
                   <option value="safety">Safety</option>
                 </select>
               </div>
-              <input type="text" placeholder="Activity" required />
-              <input type="date" placeholder="Scheduled Date" />
+              <input type="text" placeholder="Activity" required /  />
+              <input type="date" placeholder="Scheduled Date" /  />
               <select required>
                 <option value="">Select Inspector</option>
                 <option value="mike_chen">Mike Chen</option>
@@ -279,4 +281,6 @@ const ProjectITPs: React.FC<ProjectITPsProps> = ({ project }) => {
   );
 };
 
-export default ProjectITPs;
+export default ProjectITPs
+    </>
+;

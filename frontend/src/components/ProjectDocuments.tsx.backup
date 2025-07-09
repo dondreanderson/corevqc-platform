@@ -89,7 +89,9 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ project }) => {
   const getFileIcon = (type: string) => {
     switch (type.toLowerCase()) {
       case 'pdf':
-        return '📄';
+        return 
+    <>
+'📄';
       case 'excel':
       case 'xlsx':
         return '📊';
@@ -122,7 +124,7 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ project }) => {
         <div className="header-info">
           <h3>Project Documents</h3>
           <span className="doc-count">{filteredDocuments.length} documents</span>
-        </div>
+        </p>
         <button 
           onClick={() => setShowUpload(true)}
           className="btn-primary"
@@ -200,7 +202,7 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ project }) => {
               <div className="file-upload-area">
                 <div className="upload-icon">📤</div>
                 <p>Drag and drop files here or click to browse</p>
-                <input type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.zip" />
+                <input type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.zip" /  />
               </div>
               <div className="form-fields">
                 <select>
@@ -229,4 +231,6 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ project }) => {
   );
 };
 
-export default ProjectDocuments;
+export default ProjectDocuments
+    </>
+;

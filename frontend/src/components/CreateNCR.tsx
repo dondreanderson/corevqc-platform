@@ -1,68 +1,28 @@
+// frontend/src/components/CreateNCR.tsx
 import React, { useState } from 'react';
+import { apiService } from '../services/apiService';
+import { CreateNCRData } from '../types/quality';
 
 interface CreateNCRProps {
+  projectId: string;
   onNCRCreated: () => void;
   onCancel: () => void;
 }
 
-interface NCRFormData {
-  title: string;
-  description: string;
-  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-  category: string;
-  location: string;
-  dueDate: string;
-  projectId: string;
-}
-
-const CreateNCR: React.FC<CreateNCRProps> = ({ onNCRCreated, onCancel }) => {
-  const [formData, setFormData] = useState<NCRFormData>({
+const CreateNCR: React.FC<CreateNCRProps> = ({ projectId, onNCRCreated, onCancel }) => {
+  const [formData, setFormData] = useState<CreateNCRData>({
     title: '',
     description: '',
     severity: 'MEDIUM',
     category: '',
     location: '',
-    dueDate: '',
-    projectId: ''
+    projectId,
+    reportedById: '', // This will be set by the API based on authenticated user
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.title.trim() || !formData.description.trim()) {
-      setError('Title and description are required');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/ncrs`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        onNCRCreated();
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error || 'Failed to create NCR');
-      }
-    } catch (err) {
-      console.error('Error creating NCR:', err);
-      setError('Failed to create NCR');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -70,53 +30,83 @@ const CreateNCR: React.FC<CreateNCRProps> = ({ onNCRCreated, onCancel }) => {
     }));
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.title.trim() || !formData.description.trim() || !formData.category.trim()) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+      
+      await apiService.createNCR(formData);
+      onNCRCreated();
+    } catch (err: any) {
+      setError(err.message || 'Failed to create NCR');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="modal-overlay">
-      <div className="modal-content ncr-modal">
-        <div className="modal-header">
-          <h2>Create New NCR</h2>
-          <button onClick={onCancel} className="modal-close">×</button>
-        </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-90vh overflow-y-auto">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Create Non-Conformance Report</h2>
+        
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+            {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="ncr-form">
-          {error && (
-            <div className="error-message">{error}</div>
-          )}
-
-          <div className="form-group">
-            <label htmlFor="title">Title *</label>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+              Title *
+            </label>
             <input
               type="text"
               id="title"
               name="title"
               value={formData.title}
-              onChange={handleInputChange}
-              placeholder="Brief description of the issue"
+              onChange={handleChange}
               required
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              placeholder="Enter NCR title"
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="description">Description *</label>
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+              Description *
+            </label>
             <textarea
               id="description"
               name="description"
               value={formData.description}
-              onChange={handleInputChange}
-              placeholder="Detailed description of the non-conformance"
-              rows={4}
+              onChange={handleChange}
               required
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              placeholder="Describe the non-conformance in detail"
             />
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="severity">Severity</label>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="severity" className="block text-sm font-medium text-gray-700 mb-1">
+                Severity *
+              </label>
               <select
                 id="severity"
                 name="severity"
                 value={formData.severity}
-                onChange={handleInputChange}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
               >
                 <option value="LOW">Low</option>
                 <option value="MEDIUM">Medium</option>
@@ -125,55 +115,65 @@ const CreateNCR: React.FC<CreateNCRProps> = ({ onNCRCreated, onCancel }) => {
               </select>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="category">Category</label>
-              <select
+            <div>
+              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                Category *
+              </label>
+              <input
+                type="text"
                 id="category"
                 name="category"
                 value={formData.category}
-                onChange={handleInputChange}
-              >
-                <option value="">Select Category</option>
-                <option value="Quality">Quality</option>
-                <option value="Safety">Safety</option>
-                <option value="Process">Process</option>
-                <option value="Material">Material</option>
-                <option value="Environmental">Environmental</option>
-                <option value="Documentation">Documentation</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="location">Location</label>
-              <input
-                type="text"
-                id="location"
-                name="location"
-                value={formData.location}
-                onChange={handleInputChange}
-                placeholder="Specific location of the issue"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="dueDate">Due Date</label>
-              <input
-                type="date"
-                id="dueDate"
-                name="dueDate"
-                value={formData.dueDate}
-                onChange={handleInputChange}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                placeholder="e.g., Quality, Safety, Process"
               />
             </div>
           </div>
 
-          <div className="modal-actions">
-            <button type="button" onClick={onCancel} className="btn-secondary">
+          <div>
+            <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+              Location
+            </label>
+            <input
+              type="text"
+              id="location"
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              placeholder="Enter location where issue was found"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 mb-1">
+              Due Date
+            </label>
+            <input
+              type="date"
+              id="dueDate"
+              name="dueDate"
+              value={formData.dueDate || ''}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+            />
+          </div>
+
+          <div className="flex justify-end space-x-4 mt-6">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+            >
               Cancel
             </button>
-            <button type="submit" disabled={loading} className="btn-primary">
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+            >
               {loading ? 'Creating...' : 'Create NCR'}
             </button>
           </div>

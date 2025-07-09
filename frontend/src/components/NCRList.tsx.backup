@@ -1,11 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NCR List Management - CoreVQC</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+import React from 'react';
+
+<div>
+<div>
+    
+    
+    NCR List Management - CoreVQC</title>
+    
+    
     <style>
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -99,47 +100,47 @@
             margin-bottom: 1rem;
         }
     </style>
-</head>
-<body class="bg-gray-50">
-    <!-- Header -->
-    <div class="gradient-bg text-white py-6">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex items-center justify-between">
+</span>
+<div>
+    {/* Header */}
+    <div className="gradient-bg text-white py-6">
+        <div className="max-w-7xl mx-auto px-6">
+            <div className="flex items-center justify-between">
                 <div>
-                    <nav class="flex items-center space-x-2 text-sm mb-4 opacity-90">
-                        <a href="#" class="hover:underline">Dashboard</a>
-                        <span>/</span>
-                        <a href="#" class="hover:underline">Quality Control</a>
+                    <nav className="flex items-center space-x-2 text-sm mb-4 opacity-90">
+                        <a href="#" className="hover:underline">Dashboard</a>
+                        <span>/</div>
+                        <a href="#" className="hover:underline">Quality Control</a>
                         <span>/</span>
                         <span>NCR Management</span>
                     </nav>
-                    <h1 class="text-3xl font-bold mb-2">NCR Management</h1>
-                    <p class="text-lg opacity-90">Non-Conformance Reports & Quality Issues</p>
+                    <h1 className="text-3xl font-bold mb-2">NCR Management</h1>
+                    <p className="text-lg opacity-90">Non-Conformance Reports & Quality Issues</div>
                 </div>
-                <button onclick="openCreateNCRModal()" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 flex items-center space-x-2">
-                    <i class="fas fa-plus"></i>
+                <button onClick="openCreateNCRModal()" className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 flex items-center space-x-2">
+                    <i className="fas fa-plus"></i>
                     <span>Create NCR</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-6 py-8">
-        <!-- Filters and Search -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-6">
-                <!-- Search Bar -->
-                <div class="flex-1 max-w-md">
-                    <div class="relative">
+    <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Filters and Search */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-6">
+                {/* Search Bar */}
+                <div className="flex-1 max-w-md">
+                    <div className="relative">
                         <input type="text" id="searchInput" placeholder="Search NCRs..." 
-                               class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <i class="fas fa-search absolute left-3 top-4 text-gray-400"></i>
+                               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"  />
+                        <i className="fas fa-search absolute left-3 top-4 text-gray-400"></i>
                     </div>
                 </div>
                 
-                <!-- Filters -->
-                <div class="flex flex-wrap gap-4">
-                    <select id="statusFilter" class="border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                {/* Filters */}
+                <div className="flex flex-wrap gap-4">
+                    <select id="statusFilter" className="border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">All Status</option>
                         <option value="OPEN">Open</option>
                         <option value="IN_PROGRESS">In Progress</option>
@@ -147,7 +148,7 @@
                         <option value="CLOSED">Closed</option>
                     </select>
                     
-                    <select id="severityFilter" class="border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <select id="severityFilter" className="border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">All Severity</option>
                         <option value="CRITICAL">Critical</option>
                         <option value="HIGH">High</option>
@@ -155,7 +156,7 @@
                         <option value="LOW">Low</option>
                     </select>
                     
-                    <select id="categoryFilter" class="border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <select id="categoryFilter" className="border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">All Categories</option>
                         <option value="Quality">Quality</option>
                         <option value="Safety">Safety</option>
@@ -165,17 +166,17 @@
                         <option value="Documentation">Documentation</option>
                     </select>
                     
-                    <button onclick="clearFilters()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-lg transition duration-200">
-                        <i class="fas fa-times mr-2"></i>Clear
+                    <button onClick="clearFilters()" className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-lg transition duration-200">
+                        <i className="fas fa-times mr-2"></i>Clear
                     </button>
                 </div>
             </div>
             
-            <!-- View Controls -->
-            <div class="flex items-center justify-between mt-6 pt-6 border-t border-gray-200">
-                <div class="flex items-center space-x-4">
-                    <span class="text-sm text-gray-600">Sort by:</span>
-                    <select id="sortBy" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            {/* View Controls */}
+            <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-200">
+                <div className="flex items-center space-x-4">
+                    <span className="text-sm text-gray-600">Sort by:</span>
+                    <select id="sortBy" className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="newest">Newest First</option>
                         <option value="oldest">Oldest First</option>
                         <option value="priority">Priority</option>
@@ -184,61 +185,61 @@
                     </select>
                 </div>
                 
-                <div class="flex items-center space-x-4">
-                    <span class="text-sm text-gray-600" id="resultsCount">Showing 12 of 24 NCRs</span>
-                    <div class="flex bg-gray-100 rounded-lg p-1">
-                        <button onclick="setViewMode('grid')" id="gridViewBtn" class="px-3 py-2 rounded-md text-sm font-medium transition duration-200">
-                            <i class="fas fa-th"></i>
+                <div className="flex items-center space-x-4">
+                    <span className="text-sm text-gray-600" id="resultsCount">Showing 12 of 24 NCRs</span>
+                    <div className="flex bg-gray-100 rounded-lg p-1">
+                        <button onClick="setViewMode('grid')" id="gridViewBtn" className="px-3 py-2 rounded-md text-sm font-medium transition duration-200">
+                            <i className="fas fa-th"></i>
                         </button>
-                        <button onclick="setViewMode('list')" id="listViewBtn" class="px-3 py-2 rounded-md text-sm font-medium transition duration-200">
-                            <i class="fas fa-list"></i>
+                        <button onClick="setViewMode('list')" id="listViewBtn" className="px-3 py-2 rounded-md text-sm font-medium transition duration-200">
+                            <i className="fas fa-list"></i>
                         </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- NCR List Container -->
-        <div id="ncrContainer" class="grid-view">
-            <div id="ncrList" class="space-y-4">
-                <!-- NCR items will be dynamically inserted here -->
+        {/* NCR List Container */}
+        <div id="ncrContainer" className="grid-view">
+            <div id="ncrList" className="space-y-4">
+                {/* NCR items will be dynamically inserted here */}
             </div>
         </div>
 
-        <!-- Pagination -->
-        <div class="flex items-center justify-between mt-8">
-            <button id="prevPage" class="bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300 transition duration-200">
-                <i class="fas fa-chevron-left mr-2"></i>Previous
+        {/* Pagination */}
+        <div className="flex items-center justify-between mt-8">
+            <button id="prevPage" className="bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300 transition duration-200">
+                <i className="fas fa-chevron-left mr-2"></i>Previous
             </button>
-            <div class="flex space-x-2" id="pagination">
-                <!-- Pagination buttons will be inserted here -->
+            <div className="flex space-x-2" id="pagination">
+                {/* Pagination buttons will be inserted here */}
             </div>
-            <button id="nextPage" class="bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300 transition duration-200">
-                Next<i class="fas fa-chevron-right ml-2"></i>
+            <button id="nextPage" className="bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300 transition duration-200">
+                Next<i className="fas fa-chevron-right ml-2"></i>
             </button>
         </div>
     </div>
 
-    <!-- Create NCR Modal -->
-    <div id="createNCRModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-90vh overflow-y-auto">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold text-gray-900">Create New NCR</h2>
-                <button onclick="closeCreateNCRModal()" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times text-xl"></i>
+    {/* Create NCR Modal */}
+    <div id="createNCRModal" className="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-90vh overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Create New NCR</h2>
+                <button onClick="closeCreateNCRModal()" className="text-gray-500 hover:text-gray-700">
+                    <i className="fas fa-times text-xl"></i>
                 </button>
             </div>
             
-            <form id="createNCRForm" onsubmit="createNCR(event)">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form id="createNCRForm" onSubmit="createNCR(event)">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">NCR Title *</label>
-                        <input type="text" name="title" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">NCR Title *</label>
+                        <input type="text" name="title" required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"  />
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                        <select name="category" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                        <select name="category" required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             <option value="">Select Category</option>
                             <option value="Quality">Quality</option>
                             <option value="Safety">Safety</option>
@@ -250,8 +251,8 @@
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Severity *</label>
-                        <select name="severity" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Severity *</label>
+                        <select name="severity" required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             <option value="">Select Severity</option>
                             <option value="LOW">Low</option>
                             <option value="MEDIUM">Medium</option>
@@ -261,26 +262,26 @@
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                        <input type="text" name="location" placeholder="e.g., Building A, Floor 3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                        <input type="text" name="location" placeholder="e.g., Building A, Floor 3" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"  />
                     </div>
                 </div>
                 
-                <div class="mt-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
-                    <textarea name="description" required rows="4" placeholder="Detailed description of the non-conformance..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                <div className="mt-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                    <textarea name="description" required rows="4" placeholder="Detailed description of the non-conformance..." className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
                 </div>
                 
-                <div class="mt-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
-                    <input type="date" name="dueDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <div className="mt-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
+                    <input type="date" name="dueDate" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"  />
                 </div>
                 
-                <div class="flex items-center justify-end space-x-4 mt-8">
-                    <button type="button" onclick="closeCreateNCRModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium py-2 px-6 rounded-lg transition duration-200">
+                <div className="flex items-center justify-end space-x-4 mt-8">
+                    <button type="button" onClick="closeCreateNCRModal()" className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium py-2 px-6 rounded-lg transition duration-200">
                         Cancel
                     </button>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition duration-200">
+                    <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition duration-200">
                         Create NCR
                     </button>
                 </div>
@@ -414,7 +415,9 @@
                 const matchesSeverity = !severityFilter || ncr.severity === severityFilter;
                 const matchesCategory = !categoryFilter || ncr.category === categoryFilter;
 
-                return matchesSearch && matchesStatus && matchesSeverity && matchesCategory;
+                return 
+    <>
+matchesSearch && matchesStatus && matchesSeverity && matchesCategory;
             });
 
             currentPage = 1;
@@ -457,39 +460,39 @@
 
             if (pageData.length === 0) {
                 container.innerHTML = `
-                    <div class="bg-white rounded-lg p-12 text-center">
-                        <i class="fas fa-search text-4xl text-gray-400 mb-4"></i>
-                        <h3 class="text-lg font-medium text-gray-900 mb-2">No NCRs found</h3>
-                        <p class="text-gray-500">Try adjusting your search criteria or filters</p>
+                    <div className="bg-white rounded-lg p-12 text-center">
+                        <i className="fas fa-search text-4xl text-gray-400 mb-4"></i>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No NCRs found</h3>
+                        <p className="text-gray-500">Try adjusting your search criteria or filters</p>
                     </div>
                 `;
                 return;
             }
 
             container.innerHTML = pageData.map(ncr => `
-                <div class="ncr-card bg-white rounded-lg shadow-sm border border-gray-200 card-hover cursor-pointer" onclick="viewNCRDetails('${ncr.id}')">
-                    <div class="flex items-start justify-between">
-                        <div class="flex-1">
-                            <div class="flex items-center space-x-3 mb-3">
-                                <h3 class="text-lg font-semibold text-gray-900">${ncr.ncrNumber}</h3>
-                                <span class="status-badge status-${ncr.status.toLowerCase().replace('_', '-')}">${ncr.status.replace('_', ' ')}</span>
-                                <span class="status-badge severity-${ncr.severity.toLowerCase()}">${ncr.severity}</span>
+                <div className="ncr-card bg-white rounded-lg shadow-sm border border-gray-200 card-hover cursor-pointer" onClick="viewNCRDetails('${ncr.id}')">
+                    <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-3">
+                                <h3 className="text-lg font-semibold text-gray-900">${ncr.ncrNumber}</h3>
+                                <span className="status-badge status-${ncr.status.toLowerCase().replace('_', '-')}">${ncr.status.replace('_', ' ')}</span>
+                                <span className="status-badge severity-${ncr.severity.toLowerCase()}">${ncr.severity}</span>
                             </div>
-                            <h4 class="text-md font-medium text-gray-800 mb-2">${ncr.title}</h4>
-                            <p class="text-gray-600 mb-3 line-clamp-2">${ncr.description}</p>
-                            <div class="flex items-center space-x-6 text-sm text-gray-500">
-                                <span><i class="fas fa-map-marker-alt mr-1"></i> ${ncr.location}</span>
-                                <span><i class="fas fa-user mr-1"></i> ${ncr.reportedBy}</span>
-                                <span><i class="fas fa-calendar mr-1"></i> ${formatDate(ncr.reportedDate)}</span>
-                                ${ncr.dueDate ? `<span class="text-orange-600"><i class="fas fa-clock mr-1"></i> Due: ${formatDate(ncr.dueDate)}</span>` : ''}
+                            <h4 className="text-md font-medium text-gray-800 mb-2">${ncr.title}</h4>
+                            <p className="text-gray-600 mb-3 line-clamp-2">${ncr.description}</p>
+                            <div className="flex items-center space-x-6 text-sm text-gray-500">
+                                <span><i className="fas fa-map-marker-alt mr-1"></i> ${ncr.location}</span>
+                                <span><i className="fas fa-user mr-1"></i> ${ncr.reportedBy}</span>
+                                <span><i className="fas fa-calendar mr-1"></i> ${formatDate(ncr.reportedDate)}</span>
+                                ${ncr.dueDate ? `<span className="text-orange-600"><i className="fas fa-clock mr-1"></i> Due: ${formatDate(ncr.dueDate)}</span>` : ''}
                             </div>
                         </div>
-                        <div class="flex items-center space-x-2 ml-4">
-                            <button onclick="editNCR('${ncr.id}'); event.stopPropagation();" class="text-blue-600 hover:text-blue-800 p-2">
-                                <i class="fas fa-edit"></i>
+                        <div className="flex items-center space-x-2 ml-4">
+                            <button onClick="editNCR('${ncr.id}'); event.stopPropagation();" className="text-blue-600 hover:text-blue-800 p-2">
+                                <i className="fas fa-edit"></i>
                             </button>
-                            <button onclick="deleteNCR('${ncr.id}'); event.stopPropagation();" class="text-red-600 hover:text-red-800 p-2">
-                                <i class="fas fa-trash"></i>
+                            <button onClick="deleteNCR('${ncr.id}'); event.stopPropagation();" className="text-red-600 hover:text-red-800 p-2">
+                                <i className="fas fa-trash"></i>
                             </button>
                         </div>
                     </div>
@@ -605,9 +608,9 @@
             }
         });
     </script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"95a954355835a3ba","serverTiming":{"name":{"cfExtPri":true,"cfEdge":true,"cfOrigin":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}},"version":"2025.6.2","token":"4edd5f8ec12a48cfa682ab8261b80a79"}' crossorigin="anonymous"></script>
-</body>
-</html>
+{/* script content removed for JSX compatibility */}
+</div>
+</div>
     <script id="html_badge_script1">
         window.__genspark_remove_badge_link = "https://www.genspark.ai/api/html_badge/" +
             "remove_badge?token=To%2FBnjzloZ3UfQdcSaYfDtFrrvLF08orYqcKP79qEuap3kAZsbBNMeQrstaPQjQW1MJhUy14JAKyNchv%2Bq%2F2LYCLJjJQJ0hFrzA7K2P%2FMOos5MuMXNLhuyw%2FQGA%2F7buOL3J4G84zopeSoH0fhTIZUAEUFCrTzHm9FHaflDFdcLDjzH64Ahzrmx%2Fv1flc3PGv%2FqXJwUnDQTAnsAhd1%2FGOqhDFj0%2BCrYE5%2F0w6dfBd%2Fn8zj04H3XZwd8gMArg61w6B0KwgnkLtJhzUaKsNmQeossLUiR0sU7LyXFkILaGDwQn5pDuxzSW8Z%2BYlcAdMHRUGe%2BAKsKK9hU4smFcKB2YMLjedprPAn0wSdxWJbIiN0hacoCbIcb6TfHdw8OW1fvg0h0AES2WgzT%2FRmQxD3wG%2F2eTcOnNPYSQZ7zd6KTIRTgiM3fPEU98aTIzjum%2FJHYNoS7JfQLvuSUyTHLzlSjlOjpD5ie3OC35hGcZUlhWM8co5SLNb7GiUP%2BPjsTecVfaIU6A0Epjy%2F%2FUioLMf%2BUKdw64tOQBfC3Fye1OZwGb%2FO0LPjlrtzFlJAXf8%2B0BxxH7P";
@@ -615,5 +618,7 @@
         window.__genspark_token = "To/BnjzloZ3UfQdcSaYfDtFrrvLF08orYqcKP79qEuap3kAZsbBNMeQrstaPQjQW1MJhUy14JAKyNchv+q/2LYCLJjJQJ0hFrzA7K2P/MOos5MuMXNLhuyw/QGA/7buOL3J4G84zopeSoH0fhTIZUAEUFCrTzHm9FHaflDFdcLDjzH64Ahzrmx/v1flc3PGv/qXJwUnDQTAnsAhd1/GOqhDFj0+CrYE5/0w6dfBd/n8zj04H3XZwd8gMArg61w6B0KwgnkLtJhzUaKsNmQeossLUiR0sU7LyXFkILaGDwQn5pDuxzSW8Z+YlcAdMHRUGe+AKsKK9hU4smFcKB2YMLjedprPAn0wSdxWJbIiN0hacoCbIcb6TfHdw8OW1fvg0h0AES2WgzT/RmQxD3wG/2eTcOnNPYSQZ7zd6KTIRTgiM3fPEU98aTIzjum/JHYNoS7JfQLvuSUyTHLzlSjlOjpD5ie3OC35hGcZUlhWM8co5SLNb7GiUP+PjsTecVfaIU6A0Epjy//UioLMf+UKdw64tOQBfC3Fye1OZwGb/O0LPjlrtzFlJAXf8+0BxxH7P";
     </script>
     
-    <script id="html_notice_dialog_script" src="https://www.genspark.ai/notice_dialog.js"></script>
+    {/* script content removed for JSX compatibility */}
+    </>
+
     

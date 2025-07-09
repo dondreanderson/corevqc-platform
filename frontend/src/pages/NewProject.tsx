@@ -1,51 +1,26 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAppDispatch } from '../store/hooks';
-import { createProject } from '../store/projectSlice';
-import { ProjectForm } from '../components/ProjectForm';
-import toast from 'react-hot-toast';
-import '../styles/projects.css';
+import React from 'react';
 
 export const NewProject: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = async (data: any) => {
-    setIsLoading(true);
-    try {
-      await dispatch(createProject(data)).unwrap();
-      toast.success('🎉 Project created successfully!');
-      navigate('/projects');
-    } catch (error) {
-      toast.error('Failed to create project');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
-    <div className="new-project-page">
-      <div className="page-header">
-        <div className="page-title">
-          <button 
-            className="back-button"
-            onClick={() => navigate('/projects')}
-          >
-            ← Back to Projects
-          </button>
-          <h1>📋 Create New Project</h1>
-          <p>Set up a new construction project for quality control management</p>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-lg shadow-md p-8">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Create New Project</h1>
+            <p className="text-gray-600">Set up a new construction project in CoreVQC</p>
+          </div>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h2 className="text-lg font-semibold text-blue-900 mb-2">Coming Soon</h2>
+            <p className="text-blue-700">
+              The project creation form is under development. 
+              This feature will allow you to create and configure new construction projects.
+            </p>
+          </div>
         </div>
-      </div>
-
-      <div className="page-content">
-        <ProjectForm
-          onSubmit={handleSubmit}
-          isLoading={isLoading}
-          submitText="Create Project"
-        />
       </div>
     </div>
   );
 };
+
+export default NewProject;

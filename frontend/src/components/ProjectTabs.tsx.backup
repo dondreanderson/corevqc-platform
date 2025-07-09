@@ -1,0 +1,39 @@
+import React from 'react';
+
+interface ProjectTabsProps {
+  activeTab: string;
+  onTabChange: (tab: string) => void;
+}
+
+const ProjectTabs: React.FC<ProjectTabsProps> = ({ activeTab, onTabChange }) => {
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: '📊' },
+    { id: 'timeline', label: 'Timeline', icon: '📅' },
+    { id: 'team', label: 'Team', icon: '👥' },
+    { id: 'documents', label: 'Documents', icon: '📁' },
+    { id: 'ncrs', label: 'NCRs', icon: '⚠️' },
+    { id: 'itps', label: 'ITPs', icon: '✅' },
+  ];
+
+  return (
+    <>
+<div className="project-tabs">
+      <div className="tabs-container">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => onTabChange(tab.id)}
+            className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
+          >
+            <span className="tab-icon">{tab.icon}</span>
+            <span className="tab-label">{tab.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default ProjectTabs
+    </>
+;

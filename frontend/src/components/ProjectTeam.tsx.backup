@@ -66,7 +66,9 @@ const ProjectTeam: React.FC<ProjectTeamProps> = ({ project }) => {
   const getRoleColor = (role: string) => {
     switch (role.toLowerCase()) {
       case 'project manager':
-        return 'role-manager';
+        return 
+    <>
+'role-manager';
       case 'site supervisor':
         return 'role-supervisor';
       case 'quality inspector':
@@ -111,7 +113,7 @@ const ProjectTeam: React.FC<ProjectTeamProps> = ({ project }) => {
             <div className="member-header">
               <div className="member-avatar">
                 {member.avatar ? (
-                  <img src={member.avatar} alt={member.name} />
+                  <img src={member.avatar} alt={member.name} /  />
                 ) : (
                   <div className="avatar-placeholder">
                     {getInitials(member.name)}
@@ -183,9 +185,9 @@ const ProjectTeam: React.FC<ProjectTeamProps> = ({ project }) => {
           <div className="modal-content">
             <h4>Add Team Member</h4>
             <form className="add-member-form">
-              <input type="text" placeholder="Full Name" />
-              <input type="email" placeholder="Email Address" />
-              <input type="tel" placeholder="Phone Number" />
+              <input type="text" placeholder="Full Name" /  />
+              <input type="email" placeholder="Email Address" /  />
+              <input type="tel" placeholder="Phone Number" /  />
               <select>
                 <option value="">Select Role</option>
                 <option value="project_manager">Project Manager</option>
@@ -211,4 +213,6 @@ const ProjectTeam: React.FC<ProjectTeamProps> = ({ project }) => {
   );
 };
 
-export default ProjectTeam;
+export default ProjectTeam
+    </>
+;

@@ -84,7 +84,9 @@ const ProjectNCRs: React.FC<ProjectNCRsProps> = ({ project }) => {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'low':
-        return 'severity-low';
+        return 
+    <>
+'severity-low';
       case 'medium':
         return 'severity-medium';
       case 'high':
@@ -125,7 +127,7 @@ const ProjectNCRs: React.FC<ProjectNCRsProps> = ({ project }) => {
         <div className="header-info">
           <h3>Non-Conformance Reports</h3>
           <span className="ncr-count">{filteredNCRs.length} NCRs</span>
-        </div>
+        </p>
         <button 
           onClick={() => setShowCreateNCR(true)}
           className="btn-primary"
@@ -217,7 +219,7 @@ const ProjectNCRs: React.FC<ProjectNCRsProps> = ({ project }) => {
           <div className="modal-content">
             <h4>Create Non-Conformance Report</h4>
             <form className="ncr-form">
-              <input type="text" placeholder="NCR Title" required />
+              <input type="text" placeholder="NCR Title" required /  />
               <textarea placeholder="Description" rows={4} required></textarea>
               <div className="form-row">
                 <select required>
@@ -236,8 +238,8 @@ const ProjectNCRs: React.FC<ProjectNCRsProps> = ({ project }) => {
                   <option value="workmanship">Workmanship</option>
                 </select>
               </div>
-              <input type="text" placeholder="Location" required />
-              <input type="date" placeholder="Due Date" />
+              <input type="text" placeholder="Location" required /  />
+              <input type="date" placeholder="Due Date" /  />
               <div className="form-actions">
                 <button type="button" onClick={() => setShowCreateNCR(false)} className="btn-secondary">
                   Cancel
@@ -254,4 +256,6 @@ const ProjectNCRs: React.FC<ProjectNCRsProps> = ({ project }) => {
   );
 };
 
-export default ProjectNCRs;
+export default ProjectNCRs
+    </>
+;

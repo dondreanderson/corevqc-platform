@@ -1,0 +1,42 @@
+import React, { useState } from 'react';
+
+interface CreateNCRModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (ncrData: any) => void;
+}
+
+const CreateNCRModal: React.FC<CreateNCRModalProps> = ({ isOpen, onClose, onSubmit }) => {
+  const [formData, setFormData] = useState({
+    title: '',
+    category: '',
+    severity: '',
+    location: '',
+    dueDate: '',
+    description: '',
+    reportedBy: '',
+    photos: null as FileList | null
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+    onClose();
+  };
+
+  if (!isOpen) return 
+    <>
+null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-screen overflow-y-auto">
+        {/* Modal content here */}
+      </div>
+    </div>
+  );
+};
+
+export default CreateNCRModal
+    </>
+;
