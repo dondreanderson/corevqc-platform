@@ -1,6 +1,13 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import { PrismaClient } from '@prisma/client';
+import { authRouter } from './routes/auth';
+import { documentsRouter } from './routes/documents';
+import { teamRouter } from './routes/team';
+import { itpRouter } from './routes/itp';
+import { enhancedNcrRouter } from './routes/enhanced-ncr';
+
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -9,6 +16,9 @@ const prisma = new PrismaClient();
 // Middleware
 app.use(express.json());
 app.use(cors());
+
+// Static files for uploads
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Health check
 app.get('/api/health', (_req, res) => {
@@ -20,6 +30,13 @@ app.get('/api/health', (_req, res) => {
     port: PORT
   });
 });
+
+// Routes
+app.use('/api/auth', authRouter);
+app.use('/api/documents', documentsRouter);
+app.use('/api/team', teamRouter);
+app.use('/api/itps', itpRouter);
+app.use('/api/ncrs', enhancedNcrRouter);
 
 // Get all projects
 app.get('/api/projects', async (_req, res) => {

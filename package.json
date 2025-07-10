@@ -29,33 +29,17 @@
     "typescript": "^4.9.5"
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=18.0.0 <23.0.0",
     "npm": ">=8.0.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/yourusername/corevqc.git"
-  },
-  "keywords": [
-    "construction",
-    "quality-control",
-    "AR",
-    "AI",
-    "blockchain",
-    "IoT"
-  ],
-  "author": "Your Name",
-  "license": "MIT",
   "dependencies": {
-    "@heroicons/react": "^2.2.0",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
+    "@heroicons/react": "^2.0.16",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.519.0",
-    "next-auth": "^4.24.11",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-scripts": "^0.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "recharts": "^2.15.4"
   }
 }

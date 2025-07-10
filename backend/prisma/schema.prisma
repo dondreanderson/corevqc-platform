@@ -34,11 +34,15 @@ model User {
   organizationId     String?
   inspections        Inspection[]
   itps               ITP[]
-  ncrs               NCR[]
   documentsUploaded  ProjectDocument[]
   projectMemberships ProjectMember[]
   projectsOwned      Project[]         @relation("ProjectOwner")
   organization       Organization?     @relation(fields: [organizationId], references: [id])
+  ncrsReported       NCR[]             @relation("NCRReportedBy")
+  ncrsAssigned       NCR[]             @relation("NCRAssignedTo")
+  ncrWorkflowSteps   NCRWorkflowStep[]
+  ncrComments        NCRComment[]
+  ncrAttachments     NCRAttachment[]
 
   @@map("users")
 }
@@ -126,19 +130,26 @@ model NCR {
   location         String?
   correctiveAction String?
   rootCause        String?
+  resolutionType   String?     
+  priority         String?     @default("NORMAL")
   dueDate          DateTime?
+  resolvedAt       DateTime?   
   closedAt         DateTime?
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
   projectId        String
   reportedById     String
+  assignedToId     String?     
   project          Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  reportedBy       User        @relation(fields: [reportedById], references: [id])
+  reportedBy       User        @relation("NCRReportedBy", fields: [reportedById], references: [id])
+  assignedTo       User?       @relation("NCRAssignedTo", fields: [assignedToId], references: [id])
   photos           Photo[]
+  workflowSteps    NCRWorkflowStep[]
+  comments         NCRComment[]
+  attachments      NCRAttachment[]
 
   @@map("ncrs")
 }
-
 model Inspection {
   id          String           @id @default(cuid())
   title       String
@@ -272,7 +283,9 @@ enum NCRSeverity {
 
 enum NCRStatus {
   OPEN
+  ASSIGNED         
   IN_PROGRESS
+  PENDING_APPROVAL
   RESOLVED
   CLOSED
 }
@@ -287,3 +300,51 @@ enum DocumentType {
   PERMIT
   OTHER
 }
+
+model NCRWorkflowStep {
+  id            String   @id @default(cuid())
+  step          String   // REPORTED, ASSIGNED, INVESTIGATION, RESOLUTION, APPROVAL, CLOSED
+  status        String   @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
+  startedAt     DateTime?
+  completedAt   DateTime?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  ncrId         String
+  completedById String?
+  ncr           NCR      @relation(fields: [ncrId], references: [id], onDelete: Cascade)
+  completedBy   User?    @relation(fields: [completedById], references: [id])
+
+  @@map("ncr_workflow_steps")
+}
+
+model NCRComment {
+  id        String   @id @default(cuid())
+  text      String
+  type      String   @default("GENERAL") // GENERAL, INVESTIGATION, RESOLUTION, APPROVAL, ASSIGNMENT
+  createdAt DateTime @default(now())
+  ncrId     String
+  authorId  String
+  ncr       NCR      @relation(fields: [ncrId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id])
+
+  @@map("ncr_comments")
+}
+
+model NCRAttachment {
+  id           String   @id @default(cuid())
+  filename     String
+  originalName String
+  url          String
+  fileType     String?
+  fileSize     Int?
+  uploadedAt   DateTime @default(now())
+  ncrId        String
+  uploadedById String
+  ncr          NCR      @relation(fields: [ncrId], references: [id], onDelete: Cascade)
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+
+  @@map("ncr_attachments")
+}
+
+

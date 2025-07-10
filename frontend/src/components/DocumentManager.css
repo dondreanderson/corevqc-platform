@@ -1,0 +1,232 @@
+.document-manager {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  padding: 2rem;
+}
+
+.document-header {
+  margin-bottom: 2rem;
+}
+
+.document-header h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.document-header p {
+  color: #6b7280;
+}
+
+.upload-section {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.upload-area {
+  border: 2px dashed #d1d5db;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.upload-area.drag-active {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.upload-text {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.upload-subtext {
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.file-input {
+  display: none;
+}
+
+.upload-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.upload-button:hover {
+  background-color: #2563eb;
+}
+
+.upload-progress {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.filters-section {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.search-input, .filter-select {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.search-input {
+  flex-grow: 1;
+  min-width: 200px;
+}
+
+.document-count {
+  margin-left: auto;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.documents-section {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.documents-section h2 {
+  padding: 1.5rem 1.5rem 0;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.documents-table {
+  overflow-x: auto;
+}
+
+.documents-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.documents-table th {
+  background-color: #f9fafb;
+  padding: 0.75rem 1.5rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.documents-table td {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.file-icon {
+  font-size: 1.5rem;
+}
+
+.file-name {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.file-version {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.category-badge {
+  display: inline-flex;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+}
+
+.category-blue { color: #1d4ed8; background-color: #dbeafe; }
+.category-green { color: #059669; background-color: #d1fae5; }
+.category-purple { color: #7c3aed; background-color: #ede9fe; }
+.category-pink { color: #db2777; background-color: #fce7f3; }
+.category-orange { color: #ea580c; background-color: #fed7aa; }
+.category-indigo { color: #4338ca; background-color: #e0e7ff; }
+.category-yellow { color: #d97706; background-color: #fef3c7; }
+.category-gray { color: #374151; background-color: #f3f4f6; }
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  padding: 0.5rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.view-btn { background-color: #dbeafe; }
+.download-btn { background-color: #dcfce7; }
+.delete-btn { background-color: #fee2e2; }
+
+.loading, .no-documents {
+  text-align: center;
+  padding: 3rem;
+}
+
+.no-documents-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.spinner {
+  border: 2px solid #f3f4f6;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

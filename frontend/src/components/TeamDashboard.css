@@ -1,0 +1,285 @@
+/* frontend/src/components/TeamDashboard.css */
+.team-dashboard {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  padding: 2rem;
+}
+
+.team-header {
+  margin-bottom: 2rem;
+}
+
+.team-header h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.team-header p {
+  color: #6b7280;
+}
+
+.team-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.stat-icon {
+  font-size: 2rem;
+  margin-right: 1rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+.team-filters {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.search-input, .filter-select {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.search-input {
+  flex-grow: 1;
+  min-width: 200px;
+}
+
+.invite-button {
+  margin-left: auto;
+  padding: 0.5rem 1rem;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.invite-button:hover {
+  background-color: #2563eb;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.member-card {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.member-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.member-avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 1rem;
+}
+
+.avatar-initials {
+  width: 100%;
+  height: 100%;
+  background-color: #3b82f6;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.member-info h3 {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+.member-info p {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.member-status {
+  font-size: 1.25rem;
+}
+
+.member-contact {
+  margin-bottom: 1rem;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.contact-icon {
+  font-size: 1rem;
+}
+
+.member-badges {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.role-badge, .status-badge {
+  display: inline-flex;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+}
+
+.role-purple { color: #7c3aed; background-color: #ede9fe; }
+.role-blue { color: #2563eb; background-color: #dbeafe; }
+.role-green { color: #059669; background-color: #d1fae5; }
+.role-gray { color: #374151; background-color: #f3f4f6; }
+
+.status-green { color: #059669; background-color: #d1fae5; }
+.status-red { color: #dc2626; background-color: #fee2e2; }
+.status-yellow { color: #d97706; background-color: #fef3c7; }
+.status-gray { color: #374151; background-color: #f3f4f6; }
+
+.member-dates {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.member-dates p {
+  margin-bottom: 0.25rem;
+}
+
+.member-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.edit-btn {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.edit-btn:hover {
+  background-color: #2563eb;
+}
+
+.delete-btn {
+  background-color: #dc2626;
+  color: white;
+  padding: 0.5rem;
+  flex: 0;
+}
+
+.delete-btn:hover {
+  background-color: #b91c1c;
+}
+
+.team-loading, .no-members {
+  text-align: center;
+  padding: 3rem;
+}
+
+.no-members-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.spinner {
+  border: 2px solid #f3f4f6;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .team-dashboard {
+    padding: 1rem;
+  }
+  
+  .team-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .team-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .invite-button {
+    margin-left: 0;
+  }
+  
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+}
