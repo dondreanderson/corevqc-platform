@@ -1,0 +1,131 @@
+/* src/components/QualityControl.css */
+.quality-control {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.quality-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.quality-header h1 {
+  color: #333;
+  margin: 0;
+}
+
+.stat-number.critical {
+  color: #dc2626;
+}
+
+.stat-number.warning {
+  color: #f59e0b;
+}
+
+.stat-number.success {
+  color: #16a34a;
+}
+
+.filter-controls {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.filter-group label {
+  font-weight: 500;
+  color: #374151;
+}
+
+.filter-group select {
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  min-width: 200px;
+}
+
+.ncrs-section h2 {
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+.ncrs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1.5rem;
+}
+
+.ncr-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ncr-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.ncr-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.ncr-number {
+  font-family: monospace;
+  font-weight: bold;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.ncr-badges {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.severity-low { background: #f0f9ff; color: #0369a1; }
+.severity-medium { background: #fffbeb; color: #d97706; }
+.severity-high { background: #fef2f2; color: #dc2626; }
+.severity-critical { background: #fdf2f8; color: #be185d; }
+
+.status-open { background: #fef3c7; color: #d97706; }
+.status-in-progress { background: #dbeafe; color: #1d4ed8; }
+.status-resolved { background: #dcfce7; color: #16a34a; }
+.status-closed { background: #f3f4f6; color: #6b7280; }
+
+.ncr-card h3 {
+  margin: 0 0 0.75rem 0;
+  color: #1f2937;
+  font-size: 1.125rem;
+}
+
+.ncr-description {
+  color: #6b7280;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.ncr-details {
+  margin-bottom: 1.5rem;
+}
+
+.ncr-actions {
+  display: flex;
+  gap: 0.75rem;
+}
